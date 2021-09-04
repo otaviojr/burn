@@ -32,6 +32,8 @@
 #include "config.h"
 #endif
 
+#define DEBUG true
+
 #ifndef __GNUC__
 #define __FUNCTION1(a,b) a ":" #b
 #define __FUNCTION2(a,b) __FUNCTION1(a,b)

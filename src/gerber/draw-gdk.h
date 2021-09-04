@@ -37,7 +37,7 @@
 /*
  * Convert a gerber image to a GDK clip mask to be used when creating pixmap
  */
-int draw_gdk_image_to_pixmap(GdkPixmap **pixmap, gerbv_image_t *image,
+int draw_gdk_image_to_pixmap(cairo_t *cr, gerbv_image_t *image,
 		double scale, double trans_x, double trans_y,
 		enum draw_mode drawMode,
 		gerbv_selection_info_t *selectionInfo,

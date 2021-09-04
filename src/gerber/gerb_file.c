@@ -108,7 +108,7 @@ gerb_fopen(char const * filename)
     }
 #else
     /* all systems without mmap, not only MINGW32 */
-    fd = g_new(gerb_file_t);
+    fd = g_new(gerb_file_t, 1);
     if (fd == NULL) {
 	return NULL;
     }

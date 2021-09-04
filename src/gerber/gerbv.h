@@ -876,7 +876,7 @@ void
 gerbv_render_translate_to_fit_display (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo);
 
 void
-gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, GdkPixmap *pixmap,
+gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, cairo_surface_t *,
 		gerbv_render_info_t *renderInfo, gerbv_selection_info_t *selectionInfo,
 		GdkRGBA *selectionColor);
 
