@@ -10,6 +10,7 @@ cc = meson.get_compiler('c')
 
 sources = [
 		'src/main.c',
+                'src/presentation.c', 'src/presentation.h',
           ]
 
 #GTK Dependencies
