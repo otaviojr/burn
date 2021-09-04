@@ -31,6 +31,11 @@
 
 #include <gdk/gdk.h>
 
+typedef struct _gerbv_point {
+    int x;
+    int y;
+} GerbvPoint;
+
 /* Default mouse cursor. Perhaps redefine this to a variable later? */
 #define GERBV_DEF_CURSOR	NULL
 

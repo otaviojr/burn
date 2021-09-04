@@ -39,7 +39,7 @@ void
 render_zoom_display (gint zoomType, gdouble scaleFactor, gdouble mouseX, gdouble mouseY);
 
 void
-render_calculate_zoom_from_outline(GtkWidget *widget, GdkEventButton *event);
+render_calculate_zoom_from_outline(GtkWidget *widget, GdkButtonEvent *event);
 
 void
 render_draw_selection_box_outline(void);

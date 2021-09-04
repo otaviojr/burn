@@ -29,11 +29,15 @@ glib_dep = dependency('glib-2.0', version: '>= 2.38')
 gobject_dep = dependency('gobject-2.0', version: '>= 2.38')
 gmodule_dep = dependency('gmodule-2.0')
 
+cc = meson.get_compiler('c')
+m_dep = cc.find_library('m', required : false)
+
 deps = [
         glib_dep,
         gobject_dep,
         gmodule_dep,
         gtk_dep,
+        m_dep,
        ]
 
 gerb_lib_static = static_library('gerb',

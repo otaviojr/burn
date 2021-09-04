@@ -32,6 +32,7 @@
 #include "config.h"
 #endif
 
+#define VERSION "2.0"
 #define DEBUG true
 
 #ifndef __GNUC__

@@ -60,11 +60,11 @@
  * angels.
  *
  */
-static GdkPoint 
-rotate_point(GdkPoint point, double angle)
+static GerbvPoint 
+rotate_point(GerbvPoint point, double angle)
 {
     double sint, cost;
-    GdkPoint returned;
+    GerbvPoint returned;
     
     if (angle == 0.0)
 	return point;
@@ -108,12 +108,6 @@ gerbv_gdk_draw_prim1(cairo_t *cr, double *p,
     cairo_arc (cr, real_x, real_y, dia/2, 0, 2*M_PI);
     cairo_fill(cr);
     cairo_stroke(cr);
-     * A filled circle 
-     */
-    gdk_draw_arc(pixmap, local_gc, 1, real_x, real_y, dia, dia, 
-		 0, full_circle);
-
-    gdk_gc_unref(local_gc);
 
     return;
 } /* gerbv_gdk_draw_prim1 */
