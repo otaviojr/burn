@@ -60,6 +60,8 @@ create_ui(GtkBurnWindow * win)
 
     gtk_application_add_window (GTK_APPLICATION (g_application_get_default ()),
       GTK_WINDOW (win));
+
+    gtk_presentation_open_from_file(win->presentation, "/home/otaviojr/bottom.gbr");
 }
 
 static void

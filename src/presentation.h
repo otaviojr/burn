@@ -27,10 +27,11 @@ enum
 
 enum
 {
-    PRESENTATION_CONTENT_GERBER,
-    PRESENTATION_CONTENT_SVG,
-    PRESENTATION_CONTENT_PNG,
-    PRESENTATION_CONTENT_JPEG
+    PRESENTATION_TYPE_NO_CONTENT,
+    PRESENTATION_TYPE_GERBER,
+    PRESENTATION_TYPE_SVG,
+    PRESENTATION_TYPE_PNG,
+    PRESENTATION_TYPE_JPEG
 };
 
 typedef struct _GtkPresentation GtkPresentation;
@@ -48,6 +49,7 @@ G_BEGIN_DECLS
 
 GType gtk_presentation_get_type(void);
 GtkPresentation* gtk_presentation_new();
+gboolean gtk_presentation_open_from_file(GtkPresentation * self, const gchar* val);
 
 G_END_DECLS
 

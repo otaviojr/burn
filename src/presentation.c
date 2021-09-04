@@ -19,9 +19,19 @@
 
 #include "presentation.h"
 
+#include "gerber/gerbv.h"
+
+gboolean check_file_ext ( const gchar *filename, const gchar *fileext );
+
 struct _GtkPresentation
 {
     GtkWidget parent;
+
+    GValue filename;
+    GValue frames;
+    GValue current_frame;
+    GValue state;
+    GValue presentation_type;
 };
 
 struct _GtkPresentationClass
@@ -32,9 +42,11 @@ struct _GtkPresentationClass
 enum
 {
   GTK_PRESENTATION_PROP_0,
-  GTK_PRESENTATION_PROP_FILE,
+  GTK_PRESENTATION_PROP_FILENAME,
   GTK_PRESENTATION_PROP_FRAMES,
+  GTK_PRESENTATION_PROP_CURRENT_FRAME,
   GTK_PRESENTATION_PROP_STATE,
+  GTK_PRESENTATION_PROP_PRESENTATION_TYPE,
   GTK_PRESENTATION_PROP_LAST
 };
 
@@ -50,6 +62,26 @@ gtk_presentation_get_property(GObject * object,
     GtkPresentation *self = GTK_PRESENTATION(object);
 
     switch (prop_id) {
+      GTK_PRESENTATION_PROP_FILENAME:
+        g_value_set_string(value, g_value_get_string(&self->filename));
+        break;
+
+      GTK_PRESENTATION_PROP_FRAMES:
+        g_value_set_int(value, g_value_get_int(&self->frames));
+        break;
+
+      GTK_PRESENTATION_PROP_CURRENT_FRAME:
+        g_value_set_int(value, g_value_get_int(&self->current_frame));
+        break;
+
+      GTK_PRESENTATION_PROP_STATE:
+        g_value_set_int(value, g_value_get_int(&self->state));
+        break;
+
+      GTK_PRESENTATION_PROP_PRESENTATION_TYPE:
+        g_value_set_int(value, g_value_get_int(&self->presentation_type));
+        break;
+
       default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
         break;
@@ -74,6 +106,8 @@ gtk_presentation_snapshot (GtkWidget *widget, GtkSnapshot *snapshot)
 {
   GdkRGBA red, green, yellow, blue;
   float w, h;
+  cairo_t* cr;
+  float width, height;
 
   gdk_rgba_parse (&red, "red");
   gdk_rgba_parse (&green, "green");
@@ -91,6 +125,10 @@ gtk_presentation_snapshot (GtkWidget *widget, GtkSnapshot *snapshot)
                              &GRAPHENE_RECT_INIT(0, h, w, h));
   gtk_snapshot_append_color (snapshot, &blue,
                              &GRAPHENE_RECT_INIT(w, h, w, h));
+
+  width = gtk_widget_get_width (widget);
+  height = gtk_widget_get_height (widget);
+  cr = gtk_snapshot_append_cairo(snapshot, &GRAPHENE_RECT_INIT(0,0,width,height));
 }
 
 static void
@@ -103,6 +141,12 @@ static void
 gtk_presentation_finalize(GObject * object)
 {
     GtkPresentation *self = GTK_PRESENTATION(object);
+
+    g_value_unset(&self->filename);
+    g_value_unset(&self->frames);
+    g_value_unset(&self->current_frame);
+    g_value_unset(&self->state);
+    g_value_unset(&self->presentation_type);
 }
 
 static void
@@ -119,10 +163,16 @@ gtk_presentation_class_init(GtkPresentationClass * klass)
     widget_class->snapshot = gtk_presentation_snapshot;
 
     gtk_presentation_param_specs
-        [GTK_PRESENTATION_PROP_FILE] =
-        g_param_spec_object ("file", "File",
-        "File to read the frame from", G_TYPE_STRING,
-        G_PARAM_READABLE | G_PARAM_WRITABLE);
+        [GTK_PRESENTATION_PROP_FILENAME] =
+        g_param_spec_string("file", "File",
+        "File currently being presented", NULL,
+        G_PARAM_READWRITE);
+
+    gtk_presentation_param_specs
+        [GTK_PRESENTATION_PROP_CURRENT_FRAME] =
+        g_param_spec_object ("current_frame", "Current Frame",
+        "Current frame", G_TYPE_INT,
+        G_PARAM_READABLE);
 
     gtk_presentation_param_specs
         [GTK_PRESENTATION_PROP_FRAMES] =
@@ -136,6 +186,12 @@ gtk_presentation_class_init(GtkPresentationClass * klass)
         "Current state of the presentation", G_TYPE_INT,
         G_PARAM_READABLE);
 
+    gtk_presentation_param_specs
+        [GTK_PRESENTATION_PROP_PRESENTATION_TYPE] =
+        g_param_spec_object ("presentation_type", "Presentation Type",
+        "Current presentation type based on the filename", G_TYPE_INT,
+        G_PARAM_READABLE);
+
     g_object_class_install_properties (gobject_class,
         GTK_PRESENTATION_PROP_LAST, gtk_presentation_param_specs);
 }
@@ -144,10 +200,71 @@ static void
 gtk_presentation_init(GtkPresentation * self)
 {
     printf("Initializing presentation object\n");
+
+    g_value_init(&self->filename, G_TYPE_STRING);
+    g_value_init(&self->frames, G_TYPE_INT);
+    g_value_init(&self->current_frame, G_TYPE_INT);
+    g_value_init(&self->state, G_TYPE_INT);
+    g_value_init(&self->presentation_type, G_TYPE_INT);
+
+    g_value_set_int(&self->state, PRESENTATION_STATE_IDLE);
+    g_value_set_int(&self->frames, 0);
+    g_value_set_int(&self->current_frame, 0);
+    g_value_set_int(&self->presentation_type, PRESENTATION_TYPE_NO_CONTENT);
+}
+
+gboolean
+gtk_presentation_open_from_file(GtkPresentation * self, const gchar* val)
+{
+    g_return_val_if_fail (GTK_IS_PRESENTATION(self), FALSE);
+
+    g_value_set_string(&self->filename, val);
+
+    /* clear any current presentation */
+    if(g_value_get_int(&self->state) != PRESENTATION_STATE_IDLE){
+        //TODO: clear current presentation
+    }
+
+    /* check the type of this file to choose the correct processor */
+
+    if(check_file_ext(val,"gbr") || check_file_ext(val, "xln")){
+        //TODO: process greber files
+        g_value_set_int(&self->presentation_type, PRESENTATION_TYPE_GERBER);
+        g_value_set_int(&self->state, PRESENTATION_STATE_STILL);
+
+        gerbv_project_t * gerber_project = gerbv_create_project();
+
+    } else if(check_file_ext(val,"svg")) {
+        //TODO: process svg files
+    } else if(check_file_ext(val,"jpg") || check_file_ext(val,"jpeg")) {
+        //TODO: process jpg files
+    } else if(check_file_ext(val,"png")) {
+        //TODO: process png files
+    } else {
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
 GtkPresentation *
 gtk_presentation_new()
 {
     return g_object_new(GTK_TYPE_PRESENTATION, NULL);
+}
+
+gboolean check_file_ext ( const gchar *filename, const gchar *fileext )
+{
+    gboolean ret = false;
+    const gchar *basename = g_path_get_basename(filename);
+    g_assert( filename );
+    g_assert( fileext && fileext[0]=='.' );
+    if (!basename) return FALSE;
+
+    const char * dot = strrchr(basename, '.');
+    if (dot && !strcmp(dot, fileext))
+        ret = true;
+
+    g_free((gpointer)basename);
+    return ret;
 }
