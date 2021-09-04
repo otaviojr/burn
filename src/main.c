@@ -2,6 +2,8 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 
+#include "presentation.h"
+
 #include "config.h"
 
 #define APP_NAME "Burn"
@@ -16,17 +18,8 @@ typedef struct
 {
   GtkApplicationWindow parent;
 
-  GPtrArray* g_players;
-
-  GtkBox* main_area;
-  GtkGrid* cameras_area;
-  GtkWidget* null_layer;
-  GtkWidget* group_list_title_widget;
-  GtkWidget* main_popover_mennu_widget;
-  guint cameras_count;
-  guint cameras_total_group;
-
-  //GtkIpcamPreferenceObj* preference;
+  GtkWidget* h_container;
+  GtkPresentation* presentation;
 
 } GtkBurnWindow;
 
@@ -36,7 +29,6 @@ G_DEFINE_TYPE (GtkBurnWindow, gtk_burn_window, GTK_TYPE_APPLICATION_WINDOW);
 enum
 {
   PROP_0,
-//  PROP_URIS,
   LAST_PROP
 };
 
@@ -56,11 +48,15 @@ gtk_burn_window_set_property (GObject * object, guint prop_id, const GValue * va
 static void
 create_ui(GtkBurnWindow * win)
 {
-    GtkWidget *button;
-    button = gtk_button_new_with_label ("Hello World");
+    win->h_container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
 
-    gtk_window_set_child(GTK_WINDOW(win), button);
-    gtk_widget_show (button);
+    win->presentation = gtk_presentation_new();
+    gtk_box_prepend(GTK_BOX(win->h_container), GTK_WIDGET(win->presentation));
+    gtk_box_set_homogeneous(GTK_BOX(win->h_container), true);
+    gtk_window_set_child(GTK_WINDOW(win), win->h_container);
+
+    gtk_widget_show(win->h_container);
+    gtk_widget_show(GTK_WIDGET(win->presentation));
 
     gtk_application_add_window (GTK_APPLICATION (g_application_get_default ()),
       GTK_WINDOW (win));
@@ -129,7 +125,7 @@ gtk_burn_app_command_line (GApplication * application,
 
   win =
       g_object_new (gtk_burn_window_get_type (), NULL);
-  gtk_widget_show(win);
+  gtk_widget_show(GTK_WIDGET(win));
 
   return
       G_APPLICATION_CLASS (gtk_burn_app_parent_class)->command_line

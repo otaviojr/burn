@@ -70,6 +70,30 @@ gtk_presentation_set_property(GObject * object, guint prop_id, const GValue * va
 }
 
 static void
+gtk_presentation_snapshot (GtkWidget *widget, GtkSnapshot *snapshot)
+{
+  GdkRGBA red, green, yellow, blue;
+  float w, h;
+
+  gdk_rgba_parse (&red, "red");
+  gdk_rgba_parse (&green, "green");
+  gdk_rgba_parse (&yellow, "yellow");
+  gdk_rgba_parse (&blue, "blue");
+
+  w = gtk_widget_get_width (widget) / 2.0;
+  h = gtk_widget_get_height (widget) / 2.0;
+
+  gtk_snapshot_append_color (snapshot, &red,
+                             &GRAPHENE_RECT_INIT(0, 0, w, h));
+  gtk_snapshot_append_color (snapshot, &green,
+                             &GRAPHENE_RECT_INIT(w, 0, w, h));
+  gtk_snapshot_append_color (snapshot, &yellow,
+                             &GRAPHENE_RECT_INIT(0, h, w, h));
+  gtk_snapshot_append_color (snapshot, &blue,
+                             &GRAPHENE_RECT_INIT(w, h, w, h));
+}
+
+static void
 gtk_presentation_constructed(GObject* object)
 {
     GtkPresentation *self = GTK_PRESENTATION(object);
@@ -85,11 +109,14 @@ static void
 gtk_presentation_class_init(GtkPresentationClass * klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
     gobject_class->set_property = gtk_presentation_set_property;
     gobject_class->get_property = gtk_presentation_get_property;
     gobject_class->finalize = gtk_presentation_finalize;
     gobject_class->constructed = gtk_presentation_constructed;
+    
+    widget_class->snapshot = gtk_presentation_snapshot;
 
     gtk_presentation_param_specs
         [GTK_PRESENTATION_PROP_FILE] =
