@@ -2,6 +2,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 
+#include "main_menu.h"
 #include "presentation.h"
 
 #include "config.h"
@@ -16,10 +17,11 @@ G_DEFINE_TYPE (GtkBurnApp, gtk_burn_app, GTK_TYPE_APPLICATION);
 
 typedef struct
 {
-  GtkApplicationWindow parent;
+    GtkApplicationWindow parent;
 
-  GtkWidget* h_container;
-  GtkPresentation* presentation;
+    GtkWidget* main_container;
+    GtkMainMenu* main_menu;
+    GtkPresentation* presentation;
 
 } GtkBurnWindow;
 
@@ -48,20 +50,24 @@ gtk_burn_window_set_property (GObject * object, guint prop_id, const GValue * va
 static void
 create_ui(GtkBurnWindow * win)
 {
-    win->h_container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+    win->main_container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+
+    win->main_menu = gtk_main_menu_new();
+    gtk_box_prepend(GTK_BOX(win->main_container), GTK_WIDGET(win->main_menu));
 
     win->presentation = gtk_presentation_new();
-    gtk_box_prepend(GTK_BOX(win->h_container), GTK_WIDGET(win->presentation));
-    gtk_box_set_homogeneous(GTK_BOX(win->h_container), true);
-    gtk_window_set_child(GTK_WINDOW(win), win->h_container);
+    gtk_box_append(GTK_BOX(win->main_container), GTK_WIDGET(win->presentation));
+    gtk_box_set_homogeneous(GTK_BOX(win->main_container), true);
+    gtk_window_set_child(GTK_WINDOW(win), win->main_container);
 
-    gtk_widget_show(win->h_container);
+    gtk_widget_show(win->main_container);
+    gtk_widget_show(GTK_WIDGET(win->main_menu));
     gtk_widget_show(GTK_WIDGET(win->presentation));
 
     gtk_application_add_window (GTK_APPLICATION (g_application_get_default ()),
       GTK_WINDOW (win));
 
-    gtk_presentation_open_from_file(win->presentation, "/home/otaviojr/bottom.gbr");
+    gtk_presentation_open_from_file(win->presentation, "/home/cage/bottom.gbr");
 }
 
 static void

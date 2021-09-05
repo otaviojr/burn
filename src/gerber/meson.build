@@ -2,7 +2,6 @@ gerb_sources = [
 		'amacro.c', 'amacro.h',
 		'common.h',
 		'csv.c', 'csv.h', 'csv_defines.h',
-		'draw-gdk.c', 'draw-gdk.h',
 		'draw.c', 'draw.h',
 		'drill.c', 'drill.h',
 		'drill_stats.c', 'drill_stats.h',

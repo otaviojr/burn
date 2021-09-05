@@ -11,6 +11,7 @@ cc = meson.get_compiler('c')
 sources = [
 		'src/main.c',
                 'src/presentation.c', 'src/presentation.h',
+                'src/main_menu.c', 'src/main_menu.h',
           ]
 
 #GTK Dependencies

@@ -58,6 +58,7 @@
 #include "drill.h"
 #include "selection.h"
 
+#include "draw-gdk.h"
 #include "draw.h"
 
 #include "pick-and-place.h"
@@ -240,7 +241,7 @@ gerbv_open_layer_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 /* ------------------------------------------------------------------ */
 void 
 gerbv_open_layer_from_filename_with_color(gerbv_project_t *gerbvProject, gchar *filename,
-		float red, float green, float blue, float alpha)
+		guint16 red, guint16 green, guint16 blue, guint16 alpha)
 {
   gint idx_loaded;
   dprintf("Opening filename = %s\n", (gchar *) filename);
@@ -252,8 +253,9 @@ gerbv_open_layer_from_filename_with_color(gerbv_project_t *gerbvProject, gchar *
   } else {
     idx_loaded = gerbvProject->last_loaded;
     gerbvProject->file[idx_loaded]->layer_dirty = FALSE;
-    GdkRGBA colorTemplate = {red, green, blue, alpha};
+    GdkRGBA colorTemplate = {red, green, blue, 1.0};
     gerbvProject->file[idx_loaded]->color = colorTemplate;
+    gerbvProject->file[idx_loaded]->alpha = alpha;
     dprintf("     Successfully opened file!\n");	
   }
 } /* gerbv_open_layer_from_filename_with_color */  
@@ -394,7 +396,7 @@ gint
 gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t *parsed_image,
 			gchar *filename, gchar *baseName, int idx, int reload){
     gerb_verify_error_t error = GERB_IMAGE_OK;
-    float r, g, b, a; 
+    int r, g, b; 
     
     dprintf("In open_image, now error check file....\n");
     error = gerbv_image_verify(parsed_image);
@@ -440,12 +442,13 @@ gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t 
     gerbvProject->file[idx]->name = g_strdup (baseName);
     
     
-    r = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].red;
-    g = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].green;
-    b = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].blue;
-    a = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].alpha;
-    GdkRGBA colorTemplate = {r, g, b, a};
+    r = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].red*257;
+    g = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].green*257;
+    b = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].blue*257;
+
+    GdkRGBA colorTemplate = {r, g, b, 1.0};
     gerbvProject->file[idx]->color = colorTemplate;
+    gerbvProject->file[idx]->alpha = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].alpha*257;
     gerbvProject->file[idx]->isVisible = TRUE;
     gerbvProject->file[idx]->transform = defaultTransformations[defaultColorIndex % NUMBER_OF_DEFAULT_TRANSFORMATIONS];
     /* update the number of files if we need to */
@@ -761,6 +764,16 @@ gerbv_render_translate_to_fit_display (gerbv_project_t *gerbvProject, gerbv_rend
 
 /* ------------------------------------------------------------------ */
 void
+gerbv_render_to_cairo_surface_using_gdk (gerbv_project_t *gerbvProject, cairo_surface_t **s,
+		gerbv_render_info_t *renderInfo, gerbv_selection_info_t *selectionInfo,
+		GdkRGBA *selectionColor){
+	
+	cairo_t *cr;
+	cr = cairo_create (s);
+}
+
+/* ------------------------------------------------------------------ */
+void
 gerbv_render_all_layers_to_cairo_target_for_vector_output (
 		gerbv_project_t *gerbvProject, cairo_t *cr,
 		gerbv_render_info_t *renderInfo)
@@ -782,7 +795,6 @@ gerbv_render_all_layers_to_cairo_target_for_vector_output (
 		cairo_set_user_data (cr, (cairo_user_data_key_t *)0, &bg->red, NULL);
 		cairo_set_user_data (cr, (cairo_user_data_key_t *)1, &bg->green, NULL);
 		cairo_set_user_data (cr, (cairo_user_data_key_t *)2, &bg->blue, NULL);
-		cairo_set_user_data (cr, (cairo_user_data_key_t *)3, &bg->alpha, NULL);
 	}
 
 	for (i = gerbvProject->last_loaded; i >= 0; i--) {
@@ -805,8 +817,7 @@ gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject,
 	cairo_set_source_rgba (cr,
 			(double) gerbvProject->background.red,
 			(double) gerbvProject->background.green,
-			(double) gerbvProject->background.blue,
-                        (double) gerbvProject->background.alpha);
+			(double) gerbvProject->background.blue, 1);
 	cairo_paint (cr);
 
 	for (i = gerbvProject->last_loaded; i >= 0; i--) {
@@ -816,7 +827,7 @@ gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject,
 					gerbvProject->file[i], renderInfo);
 			cairo_pop_group_to_source (cr);
 			cairo_paint_with_alpha (cr, (double)
-					gerbvProject->file[i]->color.alpha);
+					gerbvProject->file[i]->alpha/G_MAXUINT16);
 		}
 	}
 }

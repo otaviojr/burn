@@ -20,7 +20,7 @@
 #include "presentation.h"
 
 #include "gerber/gerbv.h"
-
+	
 gboolean check_file_ext ( const gchar *filename, const gchar *fileext );
 
 struct _GtkPresentation
@@ -32,6 +32,8 @@ struct _GtkPresentation
     GValue current_frame;
     GValue state;
     GValue presentation_type;
+
+    gerbv_project_t * gerber_project;
 };
 
 struct _GtkPresentationClass
@@ -104,31 +106,55 @@ gtk_presentation_set_property(GObject * object, guint prop_id, const GValue * va
 static void
 gtk_presentation_snapshot (GtkWidget *widget, GtkSnapshot *snapshot)
 {
-  GdkRGBA red, green, yellow, blue;
-  float w, h;
-  cairo_t* cr;
-  float width, height;
+    GtkPresentation *self = GTK_PRESENTATION(widget);
+    GdkRGBA red, green, yellow, blue;
+    float w, h;
+    cairo_t* cr;
+    float width, height;
 
-  gdk_rgba_parse (&red, "red");
-  gdk_rgba_parse (&green, "green");
-  gdk_rgba_parse (&yellow, "yellow");
-  gdk_rgba_parse (&blue, "blue");
+    printf("Drawing presentation\n");
 
-  w = gtk_widget_get_width (widget) / 2.0;
-  h = gtk_widget_get_height (widget) / 2.0;
+    if(g_value_get_int(&self->state) == PRESENTATION_STATE_IDLE) {
+        gdk_rgba_parse (&red, "red");
+        gdk_rgba_parse (&green, "green");
+        gdk_rgba_parse (&yellow, "yellow");
+        gdk_rgba_parse (&blue, "blue");
 
-  gtk_snapshot_append_color (snapshot, &red,
-                             &GRAPHENE_RECT_INIT(0, 0, w, h));
-  gtk_snapshot_append_color (snapshot, &green,
-                             &GRAPHENE_RECT_INIT(w, 0, w, h));
-  gtk_snapshot_append_color (snapshot, &yellow,
-                             &GRAPHENE_RECT_INIT(0, h, w, h));
-  gtk_snapshot_append_color (snapshot, &blue,
-                             &GRAPHENE_RECT_INIT(w, h, w, h));
+        w = gtk_widget_get_width (widget) / 2.0;
+        h = gtk_widget_get_height (widget) / 2.0;
 
-  width = gtk_widget_get_width (widget);
-  height = gtk_widget_get_height (widget);
-  cr = gtk_snapshot_append_cairo(snapshot, &GRAPHENE_RECT_INIT(0,0,width,height));
+        gtk_snapshot_append_color (snapshot, &red,
+                                   &GRAPHENE_RECT_INIT(0, 0, w, h));
+        gtk_snapshot_append_color (snapshot, &green,
+                                   &GRAPHENE_RECT_INIT(w, 0, w, h));
+        gtk_snapshot_append_color (snapshot, &yellow,
+                                   &GRAPHENE_RECT_INIT(0, h, w, h));
+        gtk_snapshot_append_color (snapshot, &blue,
+                                   &GRAPHENE_RECT_INIT(w, h, w, h));
+    } else {
+        if(g_value_get_int(&self->presentation_type) == PRESENTATION_TYPE_GERBER){
+            printf("Drawing gerber file\n");
+            width = gtk_widget_get_width (widget);
+            height = gtk_widget_get_height (widget);
+            cr = gtk_snapshot_append_cairo(snapshot, &GRAPHENE_RECT_INIT(0,0,width,height));
+
+            gerbv_render_info_t renderInfo = {1.0, 1.0, 0.0, 0.0, GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY, width, height};
+            gerbv_render_zoom_to_fit_display (self->gerber_project, &renderInfo);
+            gerbv_render_all_layers_to_cairo_target(self->gerber_project, cr, &renderInfo);
+
+	    for(int i = self->gerber_project->last_loaded; i >= 0; i--) {
+	        if (self->gerber_project->file[i]) {
+                    self->gerber_project->file[i]->transform.rotation=90 * M_PI/180;
+		    gerbv_render_layer_to_cairo_target (cr, self->gerber_project->file[i], &renderInfo);
+		    printf("    .... calling render_image_to_cairo_target on layer %d...\n", i);			
+		}
+	    }
+
+            cairo_destroy(cr);
+        } else {
+            //TODO: presentation not supported
+        }
+    }
 }
 
 static void
@@ -147,6 +173,10 @@ gtk_presentation_finalize(GObject * object)
     g_value_unset(&self->current_frame);
     g_value_unset(&self->state);
     g_value_unset(&self->presentation_type);
+
+    if(self->gerber_project != NULL){
+        gerbv_destroy_project(self->gerber_project);
+    }
 }
 
 static void
@@ -211,6 +241,8 @@ gtk_presentation_init(GtkPresentation * self)
     g_value_set_int(&self->frames, 0);
     g_value_set_int(&self->current_frame, 0);
     g_value_set_int(&self->presentation_type, PRESENTATION_TYPE_NO_CONTENT);
+
+    self->gerber_project = NULL;
 }
 
 gboolean
@@ -227,18 +259,21 @@ gtk_presentation_open_from_file(GtkPresentation * self, const gchar* val)
 
     /* check the type of this file to choose the correct processor */
 
-    if(check_file_ext(val,"gbr") || check_file_ext(val, "xln")){
-        //TODO: process greber files
+    if(check_file_ext(val,".gbr") || check_file_ext(val, ".xln")){
+        printf("Openning gerber project\n");
+        self->gerber_project = gerbv_create_project();
+        self->gerber_project->background = (GdkRGBA){0.5, 0.5, 0.5, 1.0};
+        gerbv_open_layer_from_filename_with_color(self->gerber_project, (gchar*)val, 0.0, 0.0, 0.0, 1.0);
+
         g_value_set_int(&self->presentation_type, PRESENTATION_TYPE_GERBER);
         g_value_set_int(&self->state, PRESENTATION_STATE_STILL);
 
-        gerbv_project_t * gerber_project = gerbv_create_project();
-
-    } else if(check_file_ext(val,"svg")) {
+        //gtk_widget_queue_draw(GTK_WIDGET(self));
+    } else if(check_file_ext(val,".svg")) {
         //TODO: process svg files
-    } else if(check_file_ext(val,"jpg") || check_file_ext(val,"jpeg")) {
+    } else if(check_file_ext(val,".jpg") || check_file_ext(val,".jpeg")) {
         //TODO: process jpg files
-    } else if(check_file_ext(val,"png")) {
+    } else if(check_file_ext(val,".png")) {
         //TODO: process png files
     } else {
         return FALSE;
@@ -256,9 +291,11 @@ gtk_presentation_new()
 gboolean check_file_ext ( const gchar *filename, const gchar *fileext )
 {
     gboolean ret = false;
+
+    if(!filename) return FALSE;
+    if(!fileext || fileext[0] != '.') return FALSE;
+
     const gchar *basename = g_path_get_basename(filename);
-    g_assert( filename );
-    g_assert( fileext && fileext[0]=='.' );
     if (!basename) return FALSE;
 
     const char * dot = strrchr(basename, '.');

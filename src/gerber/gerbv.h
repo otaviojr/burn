@@ -720,7 +720,6 @@ typedef struct {
 typedef struct {
   gerbv_image_t *image; /*!< the image holding all the geometry of the layer */
   GdkRGBA color; /*!< the color to render this layer with */
-  guint16 alpha; /*!< the transparency to render this layer with */
   gboolean isVisible; /*!< TRUE if this layer should be rendered with the project */
   gpointer privateRenderData; /*!< private data holder for the rendering backend */
   gchar *fullPathname; /*!< this full pathname to the file */
@@ -827,10 +826,10 @@ gerbv_open_layer_from_filename (
 void 
 gerbv_open_layer_from_filename_with_color(gerbv_project_t *gerbvProject, /*!< the existing project to add the new layer to */
 	gchar *filename, /*!< the full pathname of the file to be parsed */
-	guint16 red, /*!< the value for the red color component */
-	guint16 green, /*!< the value for the green color component */
-	guint16 blue, /*!< the value for the blue color component */
-	guint16 alpha /*!< the value for the alpha color component */
+	float red, /*!< the value for the red color component */
+	float green, /*!< the value for the green color component */
+	float blue, /*!< the value for the blue color component */
+	float alpha /*!< the value for the alpha color component */
 );
 
 //! Free a fileinfo structure
