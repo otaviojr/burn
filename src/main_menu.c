@@ -17,6 +17,7 @@
 
 #include <gtk/gtk.h>
 
+#include "config.h"
 #include "main_menu.h"
 
 struct _GtkMainMenu
@@ -79,14 +80,27 @@ gtk_main_menu_finalize(GObject * object)
 }
 
 static void
+gtk_main_menu_measure (GtkWidget* widget, GtkOrientation orientation, int for_size,
+         int* minimum, int* natural, int* minimum_baseline, int* natural_baseline)
+{
+  *minimum = 50;
+  *natural = 50;
+  *minimum_baseline = 50;
+  *natural_baseline = 50;
+}
+
+static void
 gtk_main_menu_class_init(GtkMainMenuClass * klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
     gobject_class->set_property = gtk_main_menu_set_property;
     gobject_class->get_property = gtk_main_menu_get_property;
     gobject_class->finalize = gtk_main_menu_finalize;
     gobject_class->constructed = gtk_main_menu_constructed;
+
+    widget_class->measure = gtk_main_menu_measure;
     
     g_object_class_install_properties (gobject_class,
         GTK_MAIN_MENU_PROP_LAST, gtk_main_menu_param_specs);
@@ -96,6 +110,13 @@ static void
 gtk_main_menu_init(GtkMainMenu * self)
 {
     printf("Initializing main menu object\n");
+    gtk_widget_add_css_class(GTK_WIDGET(self), "main-menu");
+
+    GtkStyleContext* context = gtk_widget_get_style_context(GTK_WIDGET(self));
+    GtkCssProvider *cssProvider = gtk_css_provider_new();
+    gchar* filename = g_build_filename(PREFIX,DATADIR,"burn","resources","css","main-menu.css",NULL);
+    gtk_css_provider_load_from_path(cssProvider, filename);
+    gtk_style_context_add_provider(context, cssProvider, GTK_STYLE_PROVIDER_PRIORITY_THEME);
 }
 
 GtkMainMenu *

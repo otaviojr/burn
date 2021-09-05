@@ -106,7 +106,8 @@ ui_data_files = [
 install_data(ui_data_files, install_dir : join_paths(get_option('datadir'),'burn','resources', 'ui'))
 
 css_data_files = [
-               'resources/css/main.css'
+               'resources/css/main.css',
+               'resources/css/main-menu.css',
              ]
 
 install_data(css_data_files, install_dir : join_paths(get_option('datadir'),'burn','resources', 'css'))
