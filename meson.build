@@ -11,6 +11,7 @@ cc = meson.get_compiler('c')
 sources = [
 		'src/main.c',
                 'src/presentation.c', 'src/presentation.h',
+                'src/file_chooser_dialog.c', 'src/file_chooser_dialog.h',
                 'src/main_menu.c', 'src/main_menu.h',
           ]
 
@@ -111,6 +112,12 @@ css_data_files = [
              ]
 
 install_data(css_data_files, install_dir : join_paths(get_option('datadir'),'burn','resources', 'css'))
+
+icons_data_files = [
+               'resources/icons/open_file.png',
+             ]
+
+install_data(icons_data_files, install_dir : join_paths(get_option('datadir'),'burn','resources', 'icons'))
 
 #fonts_data_files = [
 #               'resources/fonts/material/MaterialIcons-Regular.ttf'

@@ -117,6 +117,9 @@ gtk_main_menu_init(GtkMainMenu * self)
     gchar* filename = g_build_filename(PREFIX,DATADIR,"burn","resources","css","main-menu.css",NULL);
     gtk_css_provider_load_from_path(cssProvider, filename);
     gtk_style_context_add_provider(context, cssProvider, GTK_STYLE_PROVIDER_PRIORITY_THEME);
+
+    g_free(filename);
+    g_object_unref (cssProvider);
 }
 
 GtkMainMenu *

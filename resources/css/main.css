@@ -1,0 +1,24 @@
+.presentation-button {
+    background-color: #E0E0E0;
+    background-image: none;
+
+    border-color: #555555;
+    border-width: 2px;
+    border-style: solid;
+    border-radius: 50px;
+
+    box-shadow: rgb(38, 57, 77) 0px 20px 30px -10px;
+}
+
+.presentation-button:active {
+    margin-top: 5px;
+    margin-left: 5px;
+    background-color: #F0F0F0;
+    box-shadow: none;
+}
+
+#open_file_button {
+}
+
+#play_button {
+}

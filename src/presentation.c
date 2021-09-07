@@ -110,7 +110,7 @@ gtk_presentation_snapshot (GtkWidget *widget, GtkSnapshot *snapshot)
     GdkRGBA red, green, yellow, blue;
     float w, h;
     cairo_t* cr;
-    float width, height;
+    float width, height, draw_width, draw_height, aspect;
 
     printf("Drawing presentation\n");
 
@@ -134,17 +134,32 @@ gtk_presentation_snapshot (GtkWidget *widget, GtkSnapshot *snapshot)
     } else {
         if(g_value_get_int(&self->presentation_type) == PRESENTATION_TYPE_GERBER){
             printf("Drawing gerber file\n");
+
             width = gtk_widget_get_width (widget);
             height = gtk_widget_get_height (widget);
-            cr = gtk_snapshot_append_cairo(snapshot, &GRAPHENE_RECT_INIT(0,0,width,height));
 
-            gerbv_render_info_t renderInfo = {1.0, 1.0, 0.0, 0.0, GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY, width, height};
+            gerbv_render_info_t renderInfo = {1.0, 1.0, 0.0, 0.0, GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY, width-150, height-150};
             gerbv_render_zoom_to_fit_display (self->gerber_project, &renderInfo);
-            gerbv_render_all_layers_to_cairo_target(self->gerber_project, cr, &renderInfo);
+
+            gerbv_render_size_t boundingBox;
+            gerbv_render_get_boundingbox(self->gerber_project, &boundingBox);
+            draw_height = (boundingBox.bottom - boundingBox.top) * 141;
+            draw_width = (boundingBox.right - boundingBox.left) * 131;
+            //TODO: Calculate pixels x inchs
+            //RPI Display 155mm - 800p -> 1mm - 5,16 * 25 -> 125
+            //              86mm - 480p -> 125
+
+
+            cr = gtk_snapshot_append_cairo(snapshot, &GRAPHENE_RECT_INIT(0,0,width,height));
+            
+	    cairo_matrix_t matrix;
+            cairo_matrix_init_translate (&matrix,150/2, 150/2);
+            cairo_transform(cr, &matrix);
 
 	    for(int i = self->gerber_project->last_loaded; i >= 0; i--) {
 	        if (self->gerber_project->file[i]) {
                     self->gerber_project->file[i]->transform.rotation=90 * M_PI/180;
+                    self->gerber_project->file[i]->transform.inverted = false;
 		    gerbv_render_layer_to_cairo_target (cr, self->gerber_project->file[i], &renderInfo);
 		    printf("    .... calling render_image_to_cairo_target on layer %d...\n", i);			
 		}
