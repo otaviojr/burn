@@ -32,10 +32,7 @@
 #include "common.h"
 
 #include <math.h>
-#include <gdk-pixbuf/gdk-pixbuf.h>
 #include <png.h>
-
-#include "render.h"
 
 #include "draw.h"
 #include <cairo.h>

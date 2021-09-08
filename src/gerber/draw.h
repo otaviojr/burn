@@ -30,7 +30,7 @@
 #ifndef DRAW_H
 #define DRAW_H
 
-#include <gdk/gdk.h>
+#include <glib.h>
 #include <cairo.h>
 #include <cairo-ps.h>
 #include <cairo-svg.h>

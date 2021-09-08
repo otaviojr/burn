@@ -74,12 +74,9 @@ extern "C" {
 #endif
 
 #include <glib.h>
-#include <gtk/gtk.h>
-#include <gdk/gdk.h>
-#include <gdk/gdkkeysyms.h>
+#include <cairo.h>
 
-#ifndef RENDER_USING_GDK
-# include <cairo.h>
+#ifdef RENDER_USING_QT
 #endif
 
 #define APERTURE_MIN 10
@@ -353,6 +350,8 @@ typedef enum {GERBV_RENDER_TYPE_GDK, /*!< render using normal GDK drawing functi
 		GERBV_RENDER_TYPE_GDK_XOR, /*!< use the GDK_XOR mask to draw a pseudo-transparent scene */
 		GERBV_RENDER_TYPE_CAIRO_NORMAL, /*!< use the cairo library */
 		GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY, /*!< use the cairo library with the smoothest edges */
+                GERBV_RENDER_TYPE_QT_NORMAL,
+                GERBV_RENDER_TYPE_QT_HIGH_QUALITY,
 		GERBV_RENDER_TYPE_MAX /*!< End-of-enum indicator */
 } gerbv_render_types_t;
 
@@ -361,6 +360,13 @@ typedef enum {GERBV_RENDER_TYPE_GDK, /*!< render using normal GDK drawing functi
  * pcb project.  The names are kept the same to make it easier to
  * compare to pcb's sources.
  */
+
+typedef struct _GerbvColor {
+    float red;
+    float green;
+    float blue;
+    float alpha;
+} GerbvColor;
     
 /* Used for HID attributes (exporting and printing, mostly).
    HA_boolean uses int_value, HA_enum sets int_value to the index and
@@ -719,7 +725,7 @@ typedef struct {
 /*!  Holds information related to an individual layer that is part of a project */
 typedef struct {
   gerbv_image_t *image; /*!< the image holding all the geometry of the layer */
-  GdkRGBA color; /*!< the color to render this layer with */
+  GerbvColor color; /*!< the color to render this layer with */
   gboolean isVisible; /*!< TRUE if this layer should be rendered with the project */
   gpointer privateRenderData; /*!< private data holder for the rendering backend */
   gchar *fullPathname; /*!< this full pathname to the file */
@@ -731,7 +737,7 @@ typedef struct {
 /*!  The top-level structure used in libgerbv.  A gerbv_project_t groups together
 any number of layers, while keeping track of other basic paramters needed for rendering */
 typedef struct {
-  GdkRGBA  background; /*!< the background color used for rendering */
+  GerbvColor background; /*!< the background color used for rendering */
   int max_files; /*!< the current number of fileinfos in the file array */
   gerbv_fileinfo_t **file; /*!< the array for holding the child fileinfos */
   int curr_index; /*!< the index of the currently active fileinfo */
@@ -877,9 +883,8 @@ gerbv_render_translate_to_fit_display (gerbv_project_t *gerbvProject, gerbv_rend
 void
 gerbv_render_to_pixmap_using_gdk (gerbv_project_t *gerbvProject, cairo_surface_t *,
 		gerbv_render_info_t *renderInfo, gerbv_selection_info_t *selectionInfo,
-		GdkRGBA *selectionColor);
+		GerbvColor *selectionColor);
 
-#ifndef RENDER_USING_GDK
 void
 gerbv_render_all_layers_to_cairo_target_for_vector_output (gerbv_project_t *gerbvProject,
 		cairo_t *cr, gerbv_render_info_t *renderInfo);
@@ -894,13 +899,12 @@ gerbv_render_layer_to_cairo_target (cairo_t *cr, /*!< the cairo context */
 		gerbv_fileinfo_t *fileInfo, /*!< the layer fileinfo pointer */
 		gerbv_render_info_t *renderInfo /*!< the scene render info */
 );
-						
+
 void
 gerbv_render_cairo_set_scale_and_translation(cairo_t *cr, gerbv_render_info_t *renderInfo);
 
 void
 gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo, gboolean pixelOutput );
-#endif
 
 double
 gerbv_get_tool_diameter(int toolNumber

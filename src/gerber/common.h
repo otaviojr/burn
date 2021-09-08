@@ -33,7 +33,7 @@
 #endif
 
 #define VERSION "2.0"
-#define DEBUG false
+#define DEBUG FALSE
 
 #ifndef __GNUC__
 #define __FUNCTION1(a,b) a ":" #b

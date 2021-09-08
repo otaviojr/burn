@@ -252,7 +252,7 @@ gerbv_open_layer_from_filename_with_color(gerbv_project_t *gerbvProject, gchar *
   } else {
     idx_loaded = gerbvProject->last_loaded;
     gerbvProject->file[idx_loaded]->layer_dirty = FALSE;
-    GdkRGBA colorTemplate = {red, green, blue, alpha};
+    GerbvColor colorTemplate = {red, green, blue, alpha};
     gerbvProject->file[idx_loaded]->color = colorTemplate;
     dprintf("     Successfully opened file!\n");	
   }
@@ -444,7 +444,7 @@ gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t 
     g = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].green;
     b = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].blue;
     a = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].alpha;
-    GdkRGBA colorTemplate = {r, g, b, a};
+    GerbvColor colorTemplate = {r, g, b, a};
     gerbvProject->file[idx]->color = colorTemplate;
     gerbvProject->file[idx]->isVisible = TRUE;
     gerbvProject->file[idx]->transform = defaultTransformations[defaultColorIndex % NUMBER_OF_DEFAULT_TRANSFORMATIONS];
@@ -765,7 +765,7 @@ gerbv_render_all_layers_to_cairo_target_for_vector_output (
 		gerbv_project_t *gerbvProject, cairo_t *cr,
 		gerbv_render_info_t *renderInfo)
 {
-	GdkRGBA *bg = &gerbvProject->background;
+	GerbvColor *bg = &gerbvProject->background;
 	int i;
 
 	gerbv_render_cairo_set_scale_and_translation (cr, renderInfo);

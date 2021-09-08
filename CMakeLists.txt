@@ -27,16 +27,21 @@ qt_add_executable(burn
     src/main.cpp
     src/gerber_renderer.cpp
 )
+
 set_target_properties(burn PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
 )
+
+link_directories("${PROJECT_BINARY_DIR}/")
+
 target_link_libraries(burn PUBLIC
     Qt::Core
     Qt::Gui
     Qt::Qml
     Qt::Quick
     Qt::QuickControls2
+    gerbv
 )
 
 # special case begin

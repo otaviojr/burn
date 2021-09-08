@@ -1,10 +1,10 @@
 #ifndef __GERBER_RENDERER_H__
 #define __GERBER_RENDERER_H__
 
-#include <QtQuick/QQuickPaintedItem>
+#include <QtQuick/QQuickItem>
 #include <QColor>
 
-class GerberRenderer : public QQuickPaintedItem
+class GerberRenderer : public QQuickItem
 {
     Q_OBJECT
     Q_PROPERTY(QString fileName READ fileName WRITE setFileName)
@@ -22,7 +22,7 @@ public:
     QColor backgroundColor() const;
     void setBackgroundColor(const QColor &color);
 
-    void paint(QPainter *painter);
+    QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
 
 private:
     QString m_fileName;

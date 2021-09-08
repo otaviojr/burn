@@ -16,17 +16,17 @@ ApplicationWindow {
         anchors.fill: parent
     }
 
-    Component{
+    Item {
         id: firstView
+        anchors.fill: parent
 
-        Rectangle {
+        Rectangle{
             anchors.fill: parent
-            color: "#00B000"
-            width: 80; height: 80
+            color: "green"
 
-            Gerber {
-                anchors.centerIn: parent
-                width: 100; height: 100
+            Gerber{
+                id: gerber
+                anchors.fill: parent
             }
         }
     }
