@@ -14,14 +14,37 @@ GerberRenderer::GerberRenderer(QQuickItem *parent)
     this->m_color = QColor(QLatin1String("red"));
 }
 
-QString GerberRenderer::fileName() const
+void GerberRenderer::closeProject()
 {
-    return m_fileName;
+    if(this->gerbv_project){
+        gerbv_destroy_project(this->gerbv_project);
+        this->gerbv_project = NULL;
+    }
 }
 
-void GerberRenderer::setFileName(const QString &name)
+bool GerberRenderer::openProject(const QString &fileName)
 {
-    m_fileName = name;
+    if(this->gerbv_project)
+        gerbv_destroy_project(this->gerbv_project);
+
+
+    this->gerbv_project = gerbv_create_project();
+    this->gerbv_project->background = (GerbvColor){0.5, 0.5, 0.5, 1.0};
+    gerbv_open_layer_from_filename_with_color(this->gerbv_project, (char*)fileName.toUtf8().constData(), 0.0, 0.0, 0.0, 1.0);
+    if(this->gerbv_project->file[0]){
+        this->gerbv_project->file[0]->transform.rotation = 90 * M_PI/180;
+        this->update();
+        emit projectChanged(true);
+        return TRUE;
+    }
+    gerbv_destroy_project(this->gerbv_project);
+    this->gerbv_project = NULL;
+    return FALSE;
+}
+
+bool GerberRenderer::hasProject()
+{
+    return (this->gerbv_project && this->gerbv_project->file[0]);
 }
 
 QColor GerberRenderer::color() const
@@ -48,10 +71,6 @@ QSGNode *GerberRenderer::updatePaintNode(QSGNode * oldNode, QQuickItem::UpdatePa
 {
     auto const w(width()), h(height());
 
-    std::cerr << "Start Painting\n";
-    std::cerr << "Width=" << w << "\n";
-    std::cerr << "Height=" << h << "\n";
-
     QImage image(w, h, QImage::Format_RGBA8888);
     image.fill(QColor("transparent"));
 
@@ -60,22 +79,24 @@ QSGNode *GerberRenderer::updatePaintNode(QSGNode * oldNode, QQuickItem::UpdatePa
 
     auto const cr(cairo_create(surf));
 
-    gerbv_project_t* gerbv_project = gerbv_create_project();
-    gerbv_project->background = (GerbvColor){0.5, 0.5, 0.5, 1.0};
-    gerbv_open_layer_from_filename_with_color(gerbv_project, (char*)"/home/cage/bottom.gbr", 0.0, 0.0, 0.0, 1.0);
-    gerbv_project->file[0]->transform.rotation = 90 * M_PI/180;
+    if(this->gerbv_project){
+        gerbv_project_t* gerbv_project = gerbv_create_project();
+        gerbv_project->background = (GerbvColor){0.5, 0.5, 0.5, 1.0};
+        gerbv_open_layer_from_filename_with_color(gerbv_project, (char*)"/home/cage/bottom.gbr", 0.0, 0.0, 0.0, 1.0);
+        gerbv_project->file[0]->transform.rotation = 90 * M_PI/180;
 
-    gerbv_render_info_t renderInfo = {1.0, 1.0, 0.0, 0.0, GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY, (int)w, (int)h};
-    gerbv_render_zoom_to_fit_display (gerbv_project, &renderInfo);
+        gerbv_render_info_t renderInfo = {1.0, 1.0, 0.0, 0.0, GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY, (int)w, (int)h};
+        gerbv_render_zoom_to_fit_display (gerbv_project, &renderInfo);
 
-    //cairo_matrix_t matrix;
-    //cairo_matrix_init_translate (&matrix, 0, 0);
-    //cairo_transform(cr, &matrix);
+        //cairo_matrix_t matrix;
+        //cairo_matrix_init_translate (&matrix, 0, 0);
+        //cairo_transform(cr, &matrix);
 
-    for(int i = gerbv_project->last_loaded; i >= 0; i--) {
-        if (gerbv_project->file[i]) {
-            gerbv_render_layer_to_cairo_target (cr, gerbv_project->file[i], &renderInfo);
-	}
+        for(int i = gerbv_project->last_loaded; i >= 0; i--) {
+            if (gerbv_project->file[i]) {
+                 gerbv_render_layer_to_cairo_target (cr, gerbv_project->file[i], &renderInfo);
+    	    }
+        }
     }
 
     QSGSimpleTextureNode *node = static_cast<QSGSimpleTextureNode *>(oldNode);
@@ -90,8 +111,6 @@ QSGNode *GerberRenderer::updatePaintNode(QSGNode * oldNode, QQuickItem::UpdatePa
 
     cairo_surface_destroy(surf);
     cairo_destroy(cr);
-
-    std::cerr << "Ending Painting\n";
 
     node->setRect(boundingRect());
     return node;

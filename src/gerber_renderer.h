@@ -4,30 +4,36 @@
 #include <QtQuick/QQuickItem>
 #include <QColor>
 
+#include "gerber/gerbv.h"
+
 class GerberRenderer : public QQuickItem
 {
     Q_OBJECT
-    Q_PROPERTY(QString fileName READ fileName WRITE setFileName)
     Q_PROPERTY(QColor color READ color WRITE setColor)
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor)
+    Q_PROPERTY(bool hasProject READ hasProject NOTIFY projectChanged)
     QML_ELEMENT
 
 public:
     GerberRenderer(QQuickItem *parent = 0);
 
-    QString fileName() const;
-    void setFileName(const QString &name);
     QColor color() const;
     void setColor(const QColor &color);
     QColor backgroundColor() const;
     void setBackgroundColor(const QColor &color);
 
-    QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
+    QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *) override;
 
+    Q_INVOKABLE bool openProject(const QString &fileName);
+    Q_INVOKABLE void closeProject();
+    Q_INVOKABLE bool hasProject();
 private:
-    QString m_fileName;
     QColor m_color;
     QColor m_backgroundColor;
+    gerbv_project_t * gerbv_project;
+
+signals:
+    void projectChanged(const bool value);
 };
 
 #endif
