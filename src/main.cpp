@@ -26,6 +26,9 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
 
     engine.load(QUrl("qrc:/resources/main.qml"));
+    engine.load(QUrl("qrc:/resources/BurnButton.qml"));
+    engine.load(QUrl("qrc:/resources/pages/FileSelection.qml"));
+    engine.load(QUrl("qrc:/resources/pages/FolderSelection.qml"));
     if (engine.rootObjects().isEmpty())
         return -1;
 

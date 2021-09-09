@@ -19,6 +19,8 @@ void GerberRenderer::closeProject()
     if(this->gerbv_project){
         gerbv_destroy_project(this->gerbv_project);
         this->gerbv_project = NULL;
+        this->update();
+        emit projectChanged(true);
     }
 }
 
@@ -32,7 +34,6 @@ bool GerberRenderer::openProject(const QString &fileName)
     this->gerbv_project->background = (GerbvColor){0.5, 0.5, 0.5, 1.0};
     gerbv_open_layer_from_filename_with_color(this->gerbv_project, (char*)fileName.toUtf8().constData(), 0.0, 0.0, 0.0, 1.0);
     if(this->gerbv_project->file[0]){
-        this->gerbv_project->file[0]->transform.rotation = 90 * M_PI/180;
         this->update();
         emit projectChanged(true);
         return TRUE;
@@ -80,13 +81,8 @@ QSGNode *GerberRenderer::updatePaintNode(QSGNode * oldNode, QQuickItem::UpdatePa
     auto const cr(cairo_create(surf));
 
     if(this->gerbv_project){
-        gerbv_project_t* gerbv_project = gerbv_create_project();
-        gerbv_project->background = (GerbvColor){0.5, 0.5, 0.5, 1.0};
-        gerbv_open_layer_from_filename_with_color(gerbv_project, (char*)"/home/cage/bottom.gbr", 0.0, 0.0, 0.0, 1.0);
-        gerbv_project->file[0]->transform.rotation = 90 * M_PI/180;
-
         gerbv_render_info_t renderInfo = {1.0, 1.0, 0.0, 0.0, GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY, (int)w, (int)h};
-        gerbv_render_zoom_to_fit_display (gerbv_project, &renderInfo);
+        gerbv_render_zoom_to_fit_display (this->gerbv_project, &renderInfo);
 
         //cairo_matrix_t matrix;
         //cairo_matrix_init_translate (&matrix, 0, 0);
@@ -94,7 +90,7 @@ QSGNode *GerberRenderer::updatePaintNode(QSGNode * oldNode, QQuickItem::UpdatePa
 
         for(int i = gerbv_project->last_loaded; i >= 0; i--) {
             if (gerbv_project->file[i]) {
-                 gerbv_render_layer_to_cairo_target (cr, gerbv_project->file[i], &renderInfo);
+                 gerbv_render_layer_to_cairo_target (cr, this->gerbv_project->file[i], &renderInfo);
     	    }
         }
     }
@@ -115,4 +111,3 @@ QSGNode *GerberRenderer::updatePaintNode(QSGNode * oldNode, QQuickItem::UpdatePa
     node->setRect(boundingRect());
     return node;
 }
-

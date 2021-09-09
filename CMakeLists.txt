@@ -55,6 +55,10 @@ endif()
 # Resources:
 set(burn_resource_files
     "resources/main.qml"
+    "resources/BurnButton.qml"
+    "resources/pages/FolderSelection.qml"
+    "resources/pages/FileSelection.qml"
+    "resources/images/v1/folder.png"
     "resources/qtquickcontrols2.conf"
 )
 

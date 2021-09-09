@@ -4,58 +4,55 @@ import Qt5Compat.GraphicalEffects
 
 import GerberRenderer 1.0
 
+import "."
+import "pages"
+
 ApplicationWindow {
     id: mainWindow
-    width: 360
-    height: 520
+    width: 800
+    height: 480
     visible: true
     title: "Delta3D - Burn"
 
-    StackView {
-        id: mainView
-        initialItem: firstView
-        anchors.fill: parent
-    }
-
     Item {
-        id: firstView
+        id: frameView
         anchors.fill: parent
 
         Rectangle{
-            id: title
+            id: titleView
             anchors {
                 top: parent.top
                 left: parent.left
                 right: parent.right
             }
             height: 60
-            
+
             Canvas{
                 anchors.fill: parent
                 onPaint:{
                      var context = getContext("2d");
-                 
+
                      context.beginPath();
                      context.moveTo(0, 0);
                      context.lineTo(parent.width-76, 0);
                      context.lineTo(parent.width-109, parent.height);
                      context.lineTo(0, parent.height);
-                     context.closePath();   
+                     context.closePath();
 
                      context.fillStyle = "#909090";
                      context.fill();
-                
+
                      context.beginPath();
                      context.moveTo(0, 0);
                      context.lineTo(parent.width-80, 0);
                      context.lineTo(parent.width-110, parent.height-3);
                      context.lineTo(0, parent.height-3);
-                     context.closePath();   
-                
+                     context.closePath();
+
                      context.fillStyle = "#0000FF";
                      context.fill();
                  }
-            
+
                  Text {
                      anchors {
                          top: parent.top
@@ -74,67 +71,104 @@ ApplicationWindow {
             }
         }
 
-        Rectangle {
+        StackView {
+            id: mainView
+            initialItem: firstView
             anchors {
-                top: title.bottom
+                top: titleView.bottom
                 left: parent.left
                 right: parent.right
                 bottom: parent.bottom
             }
-            color: "white"
-
-            Gerber{
-                id: gerber
-                anchors.fill: parent
-            }
+            property alias mainView : mainView
         }
 
         Item {
+            id: firstView
             anchors.fill: parent
-            visible: gerber.hasProject ? false : true
 
-            Button {
-                id: controlBt
-                text: qsTr("Abrir")
-                font.pixelSize: 24
+            Rectangle {
+                anchors.fill: parent
+                color: "white"
 
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: controlBt.down ? 8 : 10
-                anchors.right: parent.right
-                anchors.rightMargin: controlBt.down ? 8 : 10
-                contentItem: Text {
-                    text: controlBt.text
-                    font: controlBt.font
-                    opacity: enabled ? 1.0 : 0.3
-                    color: "black"
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    elide: Text.ElideRight
-                }
-    
-                background: Rectangle {
-                    implicitWidth: 100
-                    implicitHeight: 100
-                    opacity: enabled ? 1 : 0.3
-                    border.color: "black"
-                    border.width: 1
-                    radius: 50
-                    color: controlBt.down ? "#e0e0e0" : "#f0f0f0"
-                }
-
-                onClicked: {
-                    gerber.openProject("/home/cage/bottom.gbr");
+                Gerber{
+                    id: gerber
+                    anchors {
+                        fill: parent
+                        rightMargin: 110
+                    }
+                    property alias gerber : gerber
                 }
             }
-    
-            DropShadow {
-                anchors.fill: controlBt
-                horizontalOffset: controlBt.down ? 0 : 3
-                verticalOffset: controlBt.down ? 0 : 4
-                radius: 9.0
-                color: "#80000000"
-                source: controlBt
+
+            Item {
+                id: buttons_area
+
+                anchors {
+                    top: parent.top
+                    bottom: parent.bottom
+                    right: parent.right
+                }
+
+                width: 100
+
+                BurnButton {
+                    id: settings_btn
+                    visible: gerber.hasProject
+                    anchors{
+                        bottom: parent.bottom
+                        right: parent.right
+                        bottomMargin: settings_btn.down ? 248 : 250
+                        rightMargin: settings_btn.down ? 8 : 10
+                    }
+                    text: "Config."
+                    width: 100
+                    height: 100
+                    onClicked: {
+                    }
+                }
+
+                BurnButton {
+                    id: start_btn
+                    visible: gerber.hasProject
+                    anchors{
+                        bottom: parent.bottom
+                        right: parent.right
+                        bottomMargin: start_btn.down ? 128 : 130
+                        rightMargin: start_btn.down ? 8 : 10
+                    }
+                    text: "Iniciar"
+                    width: 100
+                    height: 100
+                    onClicked: {
+                    }
+                }
+
+                BurnButton {
+                    id: open_close_btn
+                    anchors{
+                        bottom: parent.bottom
+                        right: parent.right
+                        bottomMargin: open_close_btn.down ? 8 : 10
+                        rightMargin: open_close_btn.down ? 8 : 10
+                    }
+                    text: gerber.hasProject ? "Fechar" : "Abrir"
+                    width: 100
+                    height: 100
+                    onClicked: {
+                        if(gerber.hasProject){
+                            gerber.closeProject();
+                        } else {
+                            mainView.push("qrc:/resources/pages/FolderSelection.qml");
+                        }
+                    }
+                }
             }
         }
+    }
+    MouseArea {
+        anchors.fill: parent
+        enabled: false
+        cursorShape: Qt.BlankCursor
     }
 }
