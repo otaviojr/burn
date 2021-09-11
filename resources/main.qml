@@ -3,6 +3,7 @@ import QtQuick.Controls.Material 2.12
 import Qt5Compat.GraphicalEffects
 
 import GerberRenderer 1.0
+import GerberRendererMirror 1.0
 
 import "."
 import "pages"
@@ -13,6 +14,8 @@ ApplicationWindow {
     height: 480
     visible: true
     title: "Delta3D - Burn"
+
+    property alias mainWindow : mainWindow
 
     Item {
         id: frameView
@@ -110,7 +113,7 @@ ApplicationWindow {
                     right: parent.right
                 }
 
-                width: 100
+                width: 90
 
                 BurnButton {
                     id: settings_btn
@@ -122,9 +125,10 @@ ApplicationWindow {
                         rightMargin: settings_btn.down ? 8 : 10
                     }
                     text: "Config."
-                    width: 100
+                    width: 90
                     height: 100
                     onClicked: {
+                        configDialog.open()
                     }
                 }
 
@@ -138,7 +142,7 @@ ApplicationWindow {
                         rightMargin: start_btn.down ? 8 : 10
                     }
                     text: "Iniciar"
-                    width: 100
+                    width: 90
                     height: 100
                     onClicked: {
                     }
@@ -153,7 +157,7 @@ ApplicationWindow {
                         rightMargin: open_close_btn.down ? 8 : 10
                     }
                     text: gerber.hasProject ? "Fechar" : "Abrir"
-                    width: 100
+                    width: 90
                     height: 100
                     onClicked: {
                         if(gerber.hasProject){
@@ -166,6 +170,11 @@ ApplicationWindow {
             }
         }
     }
+
+    ConfigDialog {
+        id: configDialog
+    }
+
     MouseArea {
         anchors.fill: parent
         enabled: false

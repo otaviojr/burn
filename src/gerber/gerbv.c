@@ -20,8 +20,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
- 
- 
+
+
 /** \file gerbv.c
     \brief This file contains high-level functions for the libgerbv library
     \ingroup libgerbv
@@ -149,17 +149,17 @@ static gerbv_user_transformation_t defaultTransformations[NUMBER_OF_DEFAULT_TRAN
 	{0,0,1,1,0,FALSE,FALSE,FALSE},
 	{0,0,1,1,0,FALSE,FALSE,FALSE},
 	{0,0,1,1,0,FALSE,FALSE,FALSE},
-	{0,0,1,1,0,FALSE,FALSE,FALSE},	
 	{0,0,1,1,0,FALSE,FALSE,FALSE},
 	{0,0,1,1,0,FALSE,FALSE,FALSE},
 	{0,0,1,1,0,FALSE,FALSE,FALSE},
 	{0,0,1,1,0,FALSE,FALSE,FALSE},
-	{0,0,1,1,0,FALSE,FALSE,FALSE},		
 	{0,0,1,1,0,FALSE,FALSE,FALSE},
 	{0,0,1,1,0,FALSE,FALSE,FALSE},
 	{0,0,1,1,0,FALSE,FALSE,FALSE},
 	{0,0,1,1,0,FALSE,FALSE,FALSE},
-	{0,0,1,1,0,FALSE,FALSE,FALSE},	
+	{0,0,1,1,0,FALSE,FALSE,FALSE},
+	{0,0,1,1,0,FALSE,FALSE,FALSE},
+	{0,0,1,1,0,FALSE,FALSE,FALSE},
 	{0,0,1,1,0,FALSE,FALSE,FALSE},
 	{0,0,1,1,0,FALSE,FALSE,FALSE},
 	{0,0,1,1,0,FALSE,FALSE,FALSE},
@@ -171,7 +171,7 @@ static gerbv_user_transformation_t defaultTransformations[NUMBER_OF_DEFAULT_TRAN
 gerbv_project_t *
 gerbv_create_project (void) {
 	gerbv_project_t *returnProject= (gerbv_project_t *) g_new0(gerbv_project_t,1);
-	
+
 	/* default to using the current directory path for our starting guesses
 		on future file loads */
 	returnProject->path = g_get_current_dir ();
@@ -189,7 +189,7 @@ void
 gerbv_destroy_project (gerbv_project_t *gerbvProject)
 {
 	int i;
-	
+
 	/* destroy all the files attached to the project */
 	for(i = gerbvProject->last_loaded; i >= 0; i--) {
 		if (gerbvProject->file[i]) {
@@ -216,16 +216,16 @@ gerbv_destroy_fileinfo (gerbv_fileinfo_t *fileInfo){
 	if (fileInfo->privateRenderData) {
 		cairo_surface_destroy ((cairo_surface_t *)
 			fileInfo->privateRenderData);
-	}			
+	}
 }
 
 /* ------------------------------------------------------------------ */
-void 
-gerbv_open_layer_from_filename(gerbv_project_t *gerbvProject, gchar *filename) 
+void
+gerbv_open_layer_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
 {
   gint idx_loaded;
   dprintf("Opening filename = %s\n", (gchar *) filename);
-  
+
   if (gerbv_open_image(gerbvProject, filename, ++gerbvProject->last_loaded, FALSE, NULL, 0, TRUE) == -1) {
     GERB_COMPILE_WARNING(_("Could not read \"%s\" (loaded %d)"),
 		    (gchar *) filename, gerbvProject->last_loaded);
@@ -233,18 +233,18 @@ gerbv_open_layer_from_filename(gerbv_project_t *gerbvProject, gchar *filename)
   } else {
     idx_loaded = gerbvProject->last_loaded;
     gerbvProject->file[idx_loaded]->layer_dirty = FALSE;
-    dprintf("     Successfully opened file!\n");	
+    dprintf("     Successfully opened file!\n");
   }
 } /* gerbv_open_layer_from_filename */
 
 /* ------------------------------------------------------------------ */
-void 
+void
 gerbv_open_layer_from_filename_with_color(gerbv_project_t *gerbvProject, gchar *filename,
 		float red, float green, float blue, float alpha)
 {
   gint idx_loaded;
   dprintf("Opening filename = %s\n", (gchar *) filename);
-  
+
   if (gerbv_open_image(gerbvProject, filename, ++gerbvProject->last_loaded, FALSE, NULL, 0, TRUE) == -1) {
     GERB_COMPILE_WARNING(_("Could not read \"%s\" (loaded %d)"),
 		    (gchar *) filename, gerbvProject->last_loaded);
@@ -254,13 +254,13 @@ gerbv_open_layer_from_filename_with_color(gerbv_project_t *gerbvProject, gchar *
     gerbvProject->file[idx_loaded]->layer_dirty = FALSE;
     GerbvColor colorTemplate = {red, green, blue, alpha};
     gerbvProject->file[idx_loaded]->color = colorTemplate;
-    dprintf("     Successfully opened file!\n");	
+    dprintf("     Successfully opened file!\n");
   }
-} /* gerbv_open_layer_from_filename_with_color */  
-    
+} /* gerbv_open_layer_from_filename_with_color */
+
 /* ------------------------------------------------------------------ */
-gboolean 
-gerbv_save_layer_from_index(gerbv_project_t *gerbvProject, gint index, gchar *filename) 
+gboolean
+gerbv_save_layer_from_index(gerbv_project_t *gerbvProject, gint index, gchar *filename)
 {
 	gerbv_fileinfo_t *file = gerbvProject->file[index];
 	gerbv_user_transformation_t *trans = &file->transform;
@@ -314,18 +314,18 @@ gerbv_save_layer_from_index(gerbv_project_t *gerbvProject, gint index, gchar *fi
 int
 gerbv_revert_file(gerbv_project_t *gerbvProject, int idx){
   int rv;
-  
+
   rv = gerbv_open_image(gerbvProject, gerbvProject->file[idx]->fullPathname, idx, TRUE, NULL, 0, TRUE);
   gerbvProject->file[idx]->layer_dirty = FALSE;
   return rv;
 }
 
 /* ------------------------------------------------------------------ */
-void 
-gerbv_revert_all_files(gerbv_project_t *gerbvProject) 
+void
+gerbv_revert_all_files(gerbv_project_t *gerbvProject)
 {
   int idx;
-  
+
   for (idx = 0; idx <= gerbvProject->last_loaded; idx++) {
     if (gerbvProject->file[idx] && gerbvProject->file[idx]->fullPathname) {
       (void) gerbv_revert_file (gerbvProject, idx);
@@ -335,13 +335,13 @@ gerbv_revert_all_files(gerbv_project_t *gerbvProject)
 } /* gerbv_revert_all_files */
 
 /* ------------------------------------------------------------------ */
-void 
-gerbv_unload_layer(gerbv_project_t *gerbvProject, int index) 
+void
+gerbv_unload_layer(gerbv_project_t *gerbvProject, int index)
 {
     gint i;
 
     gerbv_destroy_fileinfo (gerbvProject->file[index]);
-    
+
     /* slide all later layers down to fill the empty slot */
     for (i=index; i<(gerbvProject->last_loaded); i++) {
 	gerbvProject->file[i]=gerbvProject->file[i+1];
@@ -352,8 +352,8 @@ gerbv_unload_layer(gerbv_project_t *gerbvProject, int index)
 } /* gerbv_unload_layer */
 
 /* ------------------------------------------------------------------ */
-void 
-gerbv_unload_all_layers (gerbv_project_t *gerbvProject) 
+void
+gerbv_unload_all_layers (gerbv_project_t *gerbvProject)
 {
     int index;
 
@@ -368,14 +368,14 @@ gerbv_unload_all_layers (gerbv_project_t *gerbvProject)
 
 
 /* ------------------------------------------------------------------ */
-void 
-gerbv_change_layer_order(gerbv_project_t *gerbvProject, gint oldPosition, gint newPosition) 
+void
+gerbv_change_layer_order(gerbv_project_t *gerbvProject, gint oldPosition, gint newPosition)
 {
     gerbv_fileinfo_t *temp_file;
     int index;
-    
+
     temp_file = gerbvProject->file[oldPosition];
-	
+
     if (oldPosition < newPosition){
 	for (index = oldPosition; index < newPosition; index++) {
 	    gerbvProject->file[index] = gerbvProject->file[index + 1];
@@ -394,8 +394,8 @@ gint
 gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t *parsed_image,
 			gchar *filename, gchar *baseName, int idx, int reload){
     gerb_verify_error_t error = GERB_IMAGE_OK;
-    float r, g, b, a; 
-    
+    float r, g, b, a;
+
     dprintf("In open_image, now error check file....\n");
     error = gerbv_image_verify(parsed_image);
 
@@ -418,7 +418,7 @@ gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t 
 	if (error & GERB_IMAGE_MISSING_INFO)
 	    g_warning(_("Missing info...trying to load anyways\n"));
     }
-    
+
     /*
      * If reload, just exchange the image. Else we have to allocate
      * a new memory before we define anything more.
@@ -432,14 +432,14 @@ gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t 
 	gerbvProject->file[idx] = (gerbv_fileinfo_t *) g_new0 (gerbv_fileinfo_t, 1);
 	gerbvProject->file[idx]->image = parsed_image;
     }
-    
+
     /*
      * Store filename for eventual reload
      */
     gerbvProject->file[idx]->fullPathname = g_strdup (filename);
     gerbvProject->file[idx]->name = g_strdup (baseName);
-    
-    
+
+
     r = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].red;
     g = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].green;
     b = defaultColors[defaultColorIndex % NUMBER_OF_DEFAULT_COLORS].blue;
@@ -478,13 +478,13 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
 	}
     else
 	{
-	    /* We're not reloading so use the attribute list read from the 
+	    /* We're not reloading so use the attribute list read from the
 	     * project file if given or NULL otherwise.
 	     */
 	    attr_list = fattr;
 	    n_attr = n_fattr;
 	}
-    /* if we don't have enough spots, then grow the file list by 2 to account for the possible 
+    /* if we don't have enough spots, then grow the file list by 2 to account for the possible
        loading of two images for PNP files */
     if ((idx+1) >= gerbvProject->max_files) {
 	gerbvProject->file = g_renew (gerbv_fileinfo_t *,
@@ -494,9 +494,9 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
 	gerbvProject->file[gerbvProject->max_files+1] = NULL;
 	gerbvProject->max_files += 2;
     }
-    
+
     dprintf("In open_image, about to try opening filename = %s\n", filename);
-    
+
     fd = gerb_fopen(filename);
     if (fd == NULL) {
 	GERB_COMPILE_ERROR(_("Trying to open \"%s\": %s"),
@@ -506,7 +506,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
 
     /* Store filename info fd for further use */
     fd->filename = g_strdup(filename);
-    
+
     dprintf("In open_image, successfully opened file.  Now check its type....\n");
     /* Here's where we decide what file type we have */
     /* Note: if the file has some invalid characters in it but still appears to
@@ -527,7 +527,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
 	dprintf("Found drill file\n");
 	if (!foundBinary || forceLoadFile)
 	    parsed_image = parse_drillfile(fd, attr_list, n_attr, reload);
-	
+
     } else if (pick_and_place_check_file_type(fd, &foundBinary)) {
 	dprintf("Found pick-n-place file\n");
 	if (!foundBinary || forceLoadFile) {
@@ -551,7 +551,7 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
 				GERB_COMPILE_ERROR(_("%s: unknown pick-and-place board side to reload"), filename);
 			}
 		}
-			
+
 		isPnpFile = TRUE;
 	}
     } else if (gerber_is_rs274d_p(fd)) {
@@ -574,13 +574,13 @@ gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int rel
 	GERB_COMPILE_ERROR(_("%s: Unknown file type."), filename);
 	parsed_image = NULL;
     }
-    
+
     g_free(fd->filename);
     gerb_fclose(fd);
     if (parsed_image == NULL) {
 	return -1;
     }
-    
+
     if (parsed_image) {
 	/* strip the filename to the base */
 	gchar *baseName = g_path_get_basename (filename);
@@ -616,7 +616,7 @@ gerbv_image_t *
 gerbv_create_rs274x_image_from_filename (gchar *filename){
 	gerbv_image_t *returnImage;
 	gerb_file_t *fd;
-	
+
 	fd = gerb_fopen(filename);
 	if (fd == NULL) {
 		GERB_COMPILE_ERROR(_("Trying to open \"%s\": %s"),
@@ -644,17 +644,17 @@ gerbv_render_get_boundingbox(gerbv_project_t *gerbvProject, gerbv_render_size_t 
 	int i;
 	gerbv_image_info_t *info;
 	gdouble minX, minY, maxX, maxY;
-	
+
 	for(i = 0; i <= gerbvProject->last_loaded; i++) {
 		if (gerbvProject->file[i] && gerbvProject->file[i]->isVisible){
-			
-			
+
+
 			info = gerbvProject->file[i]->image->info;
-			/* 
+			/*
 			* Find the biggest image and use as a size reference
 			*/
 			/* cairo info already has offset calculated into min/max */
-			
+
 			minX = info->min_x;
 			minY = info->min_y;
 			maxX = info->max_x;
@@ -679,8 +679,8 @@ gerbv_render_get_boundingbox(gerbv_project_t *gerbvProject, gerbv_render_size_t 
 			if (gerbvProject->file[i]->transform.mirrorAroundY)
 				scaleX *= -1;
 			cairo_matrix_scale (&fullMatrix, scaleX, scaleY);
-			cairo_matrix_rotate (&fullMatrix, gerbvProject->file[i]->transform.rotation);	
-			
+			cairo_matrix_rotate (&fullMatrix, gerbvProject->file[i]->transform.rotation);
+
 			cairo_matrix_transform_point (&fullMatrix, &minX, &minY);
 			cairo_matrix_transform_point (&fullMatrix, &maxX, &maxY);
 			/* compare to both min and max, since a mirror transform may have made the "max"
@@ -702,6 +702,34 @@ gerbv_render_get_boundingbox(gerbv_project_t *gerbvProject, gerbv_render_size_t 
 }
 
 /* ------------------------------------------------------------------ */
+void
+gerbv_render_zoom_real_size(gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo, int dpiX, int dpiY)
+{
+	gerbv_render_size_t bb;
+	double width, height;
+	double x_scale, y_scale;
+
+	/* Grab maximal width and height of all layers */
+	gerbv_render_get_boundingbox(gerbvProject, &bb);
+	width = bb.right - bb.left;
+	height = bb.bottom - bb.top;
+
+	/* if the values aren't sane (probably we have no models loaded), then
+	   put in some defaults */
+	if (!isnormal(width)||!isnormal(height)||((width < 0.01) && (height < 0.01))) {
+		renderInfo->lowerLeftX = 0.0;
+		renderInfo->lowerLeftY = 0.0;
+		renderInfo->scaleFactorX = 200;
+		renderInfo->scaleFactorY = renderInfo->scaleFactorX;
+		return;
+	}
+
+	renderInfo->lowerLeftX = 0.0;
+	renderInfo->lowerLeftY = 0.0;
+	renderInfo->scaleFactorX = dpiX;
+	renderInfo->scaleFactorY = dpiY;
+}
+
 void
 gerbv_render_zoom_to_fit_display (gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo)
 {
@@ -771,7 +799,7 @@ gerbv_render_all_layers_to_cairo_target_for_vector_output (
 	gerbv_render_cairo_set_scale_and_translation (cr, renderInfo);
 
 	/* Fill the background with the appropriate not white and not black
-	 * color for backward culpability. */ 
+	 * color for backward culpability. */
 	if ((bg->red != 0xffff || bg->green != 0xffff || bg->blue != 0xffff)
 	 && (bg->red != 0x0000 || bg->green != 0x0000 || bg->blue != 0x0000)) {
 		cairo_set_source_rgba (cr, bg->red, bg->green, bg->blue, bg->alpha);
@@ -806,7 +834,8 @@ gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject,
 			(double) gerbvProject->background.red,
 			(double) gerbvProject->background.green,
 			(double) gerbvProject->background.blue,
-                        (double) gerbvProject->background.alpha);
+            (double) gerbvProject->background.alpha);
+
 	cairo_paint (cr);
 
 	for (i = gerbvProject->last_loaded; i >= 0; i--) {
@@ -833,10 +862,10 @@ gerbv_render_layer_to_cairo_target (cairo_t *cr, gerbv_fileinfo_t *fileInfo,
 void
 gerbv_render_cairo_set_scale_and_translation(cairo_t *cr, gerbv_render_info_t *renderInfo){
 	gdouble translateX, translateY;
-	
+
 	translateX = (renderInfo->lowerLeftX * renderInfo->scaleFactorX);
 	translateY = (renderInfo->lowerLeftY * renderInfo->scaleFactorY);
-	
+
 	/* renderTypes 0 and 1 use GDK rendering, so we shouldn't have made it
 	   this far */
 	if (renderInfo->renderType == GERBV_RENDER_TYPE_CAIRO_NORMAL) {
@@ -860,13 +889,13 @@ gerbv_render_cairo_set_scale_and_translation(cairo_t *cr, gerbv_render_info_t *r
 /* ------------------------------------------------------------------ */
 void
 gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo, gboolean pixelOutput) {
-	cairo_set_source_rgba (cr, (double) fileInfo->color.red/G_MAXUINT16,
-		(double) fileInfo->color.green/G_MAXUINT16,
-		(double) fileInfo->color.blue/G_MAXUINT16, 1);
-	
+	cairo_set_source_rgba (cr, (double) fileInfo->color.red,
+		(double) fileInfo->color.green,
+		(double) fileInfo->color.blue, 1);
+
 	/* translate, rotate, and modify the image based on the layer-specific transformation struct */
 	cairo_save (cr);
-	
+
 	draw_image_to_cairo_target (cr, fileInfo->image,
 		1.0/MAX(renderInfo->scaleFactorX, renderInfo->scaleFactorY), DRAW_IMAGE, NULL,
 		renderInfo, TRUE, fileInfo->transform, pixelOutput);
@@ -938,7 +967,7 @@ gerbv_get_fileinfo_for_image(const gerbv_image_t *image,
 			return project->file[i];
 	}
 
-	return NULL;	
+	return NULL;
 }
 
 inline void
@@ -986,4 +1015,3 @@ gerbv_transform_coord_for_image(double *x, double *y,
 
 	return 0;
 }
-

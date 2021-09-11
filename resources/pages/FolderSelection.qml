@@ -69,6 +69,7 @@ Item{
                         right: parent.right
                     }
                     height: 30
+                    elide: Text.ElideMiddle
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                     text: fileName

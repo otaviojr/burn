@@ -61,7 +61,7 @@ Item{
                     }
                     height: parent.height-itemText.height
                     width: parent.width
-                    source: "../images/v1/folder.png"
+                    source: fileIsDir ? "../images/v1/folder.png" :  "../images/v1/file.png"
                     fillMode: Image.PreserveAspectFit
                     horizontalAlignment: Image.AlignHCenter
                 }
@@ -73,9 +73,10 @@ Item{
                         right: parent.right
                     }
                     height:30
+                    elide: fileIsDir ? Text.ElideMiddle : Text.ElideLeft
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    text: fileName
+                text: fileIsDir ? fileName : fileName.replace(/\..*$/,"")
                 }
                 MouseArea {
                     anchors.fill: parent

@@ -4,6 +4,7 @@
 #include <QtQuick/QQuickItem>
 #include <QColor>
 
+#include "gerber_renderer_mirror.h"
 #include "gerber/gerbv.h"
 
 class GerberRenderer : public QQuickItem
@@ -12,6 +13,9 @@ class GerberRenderer : public QQuickItem
     Q_PROPERTY(QColor color READ color WRITE setColor)
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor)
     Q_PROPERTY(bool hasProject READ hasProject NOTIFY projectChanged)
+    Q_PROPERTY(bool negative READ negative WRITE setNegative NOTIFY negativeChanged)
+    Q_PROPERTY(GerberRendererMirror::GerberMirror mirror READ mirror WRITE setMirror NOTIFY mirrorChanged)
+    Q_PROPERTY(float rotate READ rotate WRITE setRotate NOTIFY rotateChanged)
     QML_ELEMENT
 
 public:
@@ -21,6 +25,13 @@ public:
     void setColor(const QColor &color);
     QColor backgroundColor() const;
     void setBackgroundColor(const QColor &color);
+
+    bool negative() const;
+    void setNegative(const bool &negative);
+    GerberRendererMirror::GerberMirror mirror() const;
+    void setMirror(const GerberRendererMirror::GerberMirror &mirror);
+    float rotate() const;
+    void setRotate(const float &rotate);
 
     QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *) override;
 
@@ -34,7 +45,9 @@ private:
 
 signals:
     void projectChanged(const bool value);
+    void rotateChanged(const float rotate);
+    void mirrorChanged(const GerberRendererMirror::GerberMirror mirror);
+    void negativeChanged(const bool negative);
 };
 
 #endif
-

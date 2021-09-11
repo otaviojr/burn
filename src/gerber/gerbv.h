@@ -118,11 +118,11 @@ extern "C" {
 #define GERB_COMPILE_WARNING(...)  g_log(NULL, G_LOG_LEVEL_WARNING, __VA_ARGS__)
 #define GERB_MESSAGE(...)  g_log(NULL, G_LOG_LEVEL_MESSAGE, __VA_ARGS__)
 
-/*! The aperture macro commands */  
+/*! The aperture macro commands */
 typedef enum {GERBV_OPCODE_NOP, /*!< no operation */
 	      GERBV_OPCODE_PUSH, /*!< push the instruction onto the stack */
-	      GERBV_OPCODE_PPUSH, /*!< push parameter onto stack */ 
-	      GERBV_OPCODE_PPOP, /*!< pop parameter from stack */ 
+	      GERBV_OPCODE_PPUSH, /*!< push parameter onto stack */
+	      GERBV_OPCODE_PPOP, /*!< pop parameter from stack */
 	      GERBV_OPCODE_ADD, /*!< mathmatical add operation */
 	      GERBV_OPCODE_SUB, /*!< mathmatical subtract operation */
 	      GERBV_OPCODE_MUL, /*!< mathmatical multiply operation */
@@ -130,7 +130,7 @@ typedef enum {GERBV_OPCODE_NOP, /*!< no operation */
 	      GERBV_OPCODE_PRIM /*!< draw macro primative */
 } gerbv_opcodes_t;
 
-/*! The different message types used in libgerbv */   
+/*! The different message types used in libgerbv */
 typedef enum {GERBV_MESSAGE_FATAL, /*!< processing cannot continue */
 		GERBV_MESSAGE_ERROR, /*!< something went wrong, but processing can still continue */
 		GERBV_MESSAGE_WARNING, /*!< something was encountered that may provide the wrong output */
@@ -355,7 +355,7 @@ typedef enum {GERBV_RENDER_TYPE_GDK, /*!< render using normal GDK drawing functi
 		GERBV_RENDER_TYPE_MAX /*!< End-of-enum indicator */
 } gerbv_render_types_t;
 
-/* 
+/*
  * The following typedef's are taken directly from src/hid.h in the
  * pcb project.  The names are kept the same to make it easier to
  * compare to pcb's sources.
@@ -367,12 +367,12 @@ typedef struct _GerbvColor {
     float blue;
     float alpha;
 } GerbvColor;
-    
+
 /* Used for HID attributes (exporting and printing, mostly).
    HA_boolean uses int_value, HA_enum sets int_value to the index and
    str_value to the enumeration string.  HID_Label just shows the
    default str_value.  HID_Mixed is a real_value followed by an enum,
-   like 0.5in or 100mm. 
+   like 0.5in or 100mm.
 */
 typedef struct {
     int int_value;
@@ -401,7 +401,7 @@ typedef struct {
 } gerbv_HID_Attribute;
 /* end of HID attributes from PCB */
 
-/*! A linked list of errors found in the files */   
+/*! A linked list of errors found in the files */
 typedef struct error_list {
     int layer;
     gchar *error_text;
@@ -440,7 +440,7 @@ typedef struct gerbv_aperture {
     gerbv_unit_t unit;
 } gerbv_aperture_t;
 
-/* the gerb_aperture_list is used to keep track of 
+/* the gerb_aperture_list is used to keep track of
  * apertures used in stats reporting */
 typedef struct gerbv_aperture_list {
     int number;
@@ -513,7 +513,7 @@ typedef struct drill_list {
 /*! Struct holding statistics of drill commands used.  Used in reporting statistics */
 typedef struct {
     int layer_count;
-    
+
     gerbv_error_list_t *error_list;
     gerbv_drill_list_t *drill_list;
     int comment;
@@ -609,7 +609,7 @@ typedef struct gerbv_step_and_repeat { /* SR parameters */
     double dist_X;
     double dist_Y;
 } gerbv_step_and_repeat_t;
- 
+
 typedef struct {
     gboolean firstInstance;
     gerbv_knockout_type_t type;
@@ -620,7 +620,7 @@ typedef struct {
     gdouble height;
     gdouble border;
 } gerbv_knockout_t;
- 
+
 /*!  The structure used to keep track of RS274X layer groups */
 typedef struct {
     gerbv_step_and_repeat_t stepAndRepeat; /*!< the current step and repeat group (refer to RS274X spec) */
@@ -674,7 +674,7 @@ typedef struct gerbv_format {
     int lim_pf;    /* Length limit for codes of plot function */
     int lim_mf;    /* Length limit for codes of miscellaneous function */
 } gerbv_format_t;
-	
+
 
 /*! Struct holding info about a particular image */
 typedef struct gerbv_image_info {
@@ -703,7 +703,7 @@ typedef struct gerbv_image_info {
 
     /* Attribute list that is used to hold all sorts of information
      * about how the layer is to be parsed.
-    */ 
+    */
     gerbv_HID_Attribute *attr_list;
     int n_attr;
 } gerbv_image_info_t;
@@ -822,14 +822,14 @@ gerbv_destroy_project (gerbv_project_t *gerbvProject /*!< the project to destroy
 );
 
 //! Open a file, parse the contents, and add a new layer to an existing project
-void 
+void
 gerbv_open_layer_from_filename (
 	gerbv_project_t *gerbvProject, /*!< the existing project to add the new layer to */
 	gchar *filename /*!< the full pathname of the file to be parsed */
 );
 
 //! Open a file, parse the contents, and add a new layer to an existing project while setting the color of the layer
-void 
+void
 gerbv_open_layer_from_filename_with_color(gerbv_project_t *gerbvProject, /*!< the existing project to add the new layer to */
 	gchar *filename, /*!< the full pathname of the file to be parsed */
 	float red, /*!< the value for the red color component */
@@ -843,22 +843,22 @@ void
 gerbv_destroy_fileinfo (gerbv_fileinfo_t *fileInfo /*!< the fileinfo to free */
 );
 
-gboolean 
+gboolean
 gerbv_save_layer_from_index(gerbv_project_t *gerbvProject, gint index, gchar *filename);
 
 int
 gerbv_revert_file(gerbv_project_t *gerbvProject, int idx);
 
-void 
+void
 gerbv_revert_all_files(gerbv_project_t *gerbvProject);
 
-void 
+void
 gerbv_unload_layer(gerbv_project_t *gerbvProject, int index);
 
-void 
+void
 gerbv_unload_all_layers (gerbv_project_t *gerbvProject);
 
-void 
+void
 gerbv_change_layer_order(gerbv_project_t *gerbvProject, gint oldPosition, gint newPosition);
 
 gint
@@ -867,9 +867,12 @@ gerbv_add_parsed_image_to_project (gerbv_project_t *gerbvProject, gerbv_image_t 
 int
 gerbv_open_image(gerbv_project_t *gerbvProject, char *filename, int idx, int reload,
 		gerbv_HID_Attribute *fattr, int n_fattr, gboolean forceLoadFile);
-		
+
 void
 gerbv_render_get_boundingbox(gerbv_project_t *gerbvProject, gerbv_render_size_t *boundingbox);
+
+void
+gerbv_render_zoom_real_size(gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo, int dpiX, int dpiY);
 
 //! Calculate the zoom and translations to fit the rendered scene inside the given scene size
 void
@@ -1044,8 +1047,8 @@ gerbv_image_create_arc_object (gerbv_image_t *image, /*!< the image to draw to *
 		gdouble lineWidth, /*!< the width of the line to draw */
 		gerbv_aperture_type_t apertureType  /*!< the type of aperture to use (e.g. CIRCLE) */
 );
-		
-//! Draw a filled rectangle on the specified image	
+
+//! Draw a filled rectangle on the specified image
 void
 gerbv_image_create_rectangle_object (gerbv_image_t *image, /*!< the image to draw to */
 		gdouble coordinateX, /*!< the X coordinate of the lower left corner */
@@ -1058,7 +1061,7 @@ gerbv_image_create_rectangle_object (gerbv_image_t *image, /*!< the image to dra
 void
 gerbv_image_create_dummy_apertures (gerbv_image_t *parsed_image /*!< the image to repair */
 );
-		
+
 /*! Create new struct for holding drill stats */
 gerbv_drill_stats_t *
 gerbv_drill_stats_new(void);
@@ -1086,7 +1089,7 @@ gerbv_stats_destroy(gerbv_stats_t *);
 /*! Add stats gathered from specified layer to accumulated Gerber stats
  *  compiled from all layers */
 void
-gerbv_stats_add_layer(gerbv_stats_t *accum_stats, 
+gerbv_stats_add_layer(gerbv_stats_t *accum_stats,
 		gerbv_stats_t *input_stats,
 		int this_layer
 );

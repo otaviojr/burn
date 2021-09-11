@@ -22,10 +22,12 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Qml)
 find_package(Qt6 COMPONENTS Quick)
 find_package(Qt6 COMPONENTS QuickControls2)
+find_package(Qt6 COMPONENTS WebSockets)
 
 qt_add_executable(burn
     src/main.cpp
     src/gerber_renderer.cpp
+    src/gerber_renderer_mirror.cpp
 )
 
 set_target_properties(burn PROPERTIES
@@ -41,6 +43,7 @@ target_link_libraries(burn PUBLIC
     Qt::Qml
     Qt::Quick
     Qt::QuickControls2
+    Qt::WebSockets
     gerbv
 )
 
@@ -55,10 +58,13 @@ endif()
 # Resources:
 set(burn_resource_files
     "resources/main.qml"
+    "resources/main_cli.qml"
     "resources/BurnButton.qml"
     "resources/pages/FolderSelection.qml"
     "resources/pages/FileSelection.qml"
+    "resources/pages/ConfigDialog.qml"
     "resources/images/v1/folder.png"
+    "resources/images/v1/file.png"
     "resources/qtquickcontrols2.conf"
 )
 
