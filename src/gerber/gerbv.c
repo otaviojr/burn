@@ -703,7 +703,7 @@ gerbv_render_get_boundingbox(gerbv_project_t *gerbvProject, gerbv_render_size_t 
 
 /* ------------------------------------------------------------------ */
 void
-gerbv_render_zoom_real_size(gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo, int dpiX, int dpiY)
+gerbv_render_zoom_real_size(gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo,float dpiX, float dpiY)
 {
 	gerbv_render_size_t bb;
 	double width, height;
@@ -817,7 +817,7 @@ gerbv_render_all_layers_to_cairo_target_for_vector_output (
 		if (gerbvProject->file[i] && gerbvProject->file[i]->isVisible) {
 			gerbv_render_layer_to_cairo_target_without_transforming(
 					cr, gerbvProject->file[i],
-					renderInfo, FALSE);
+					renderInfo, (gerbvProject->last_loaded==i ? DRAW_IMAGE_WITH_BG : DRAW_IMAGE), FALSE);
 		}
 	}
 }
@@ -842,7 +842,7 @@ gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject,
 		if (gerbvProject->file[i] && gerbvProject->file[i]->isVisible) {
 			cairo_push_group (cr);
 			gerbv_render_layer_to_cairo_target (cr,
-					gerbvProject->file[i], renderInfo);
+					gerbvProject->file[i], renderInfo, (gerbvProject->last_loaded==i ? DRAW_IMAGE_WITH_BG : DRAW_IMAGE));
 			cairo_pop_group_to_source (cr);
 			cairo_paint_with_alpha (cr, (double)
 					gerbvProject->file[i]->color.alpha);
@@ -852,10 +852,17 @@ gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject,
 
 /* ------------------------------------------------------------------ */
 void
-gerbv_render_layer_to_cairo_target (cairo_t *cr, gerbv_fileinfo_t *fileInfo,
-						gerbv_render_info_t *renderInfo) {
+gerbv_render_layer_to_cairo_target_for_vector_output(cairo_t *cr, gerbv_fileinfo_t *fileInfo,
+						gerbv_render_info_t *renderInfo, enum draw_mode drawMode) {
 	gerbv_render_cairo_set_scale_and_translation(cr, renderInfo);
-	gerbv_render_layer_to_cairo_target_without_transforming(cr, fileInfo, renderInfo, TRUE);
+	gerbv_render_layer_to_cairo_target_without_transforming(cr, fileInfo, renderInfo, drawMode, FALSE);
+}
+
+void
+gerbv_render_layer_to_cairo_target (cairo_t *cr, gerbv_fileinfo_t *fileInfo,
+						gerbv_render_info_t *renderInfo, enum draw_mode drawMode) {
+	gerbv_render_cairo_set_scale_and_translation(cr, renderInfo);
+	gerbv_render_layer_to_cairo_target_without_transforming(cr, fileInfo, renderInfo, drawMode, TRUE);
 }
 
 /* ------------------------------------------------------------------ */
@@ -888,7 +895,7 @@ gerbv_render_cairo_set_scale_and_translation(cairo_t *cr, gerbv_render_info_t *r
 
 /* ------------------------------------------------------------------ */
 void
-gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo, gboolean pixelOutput) {
+gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo, enum draw_mode drawMode, gboolean pixelOutput) {
 	cairo_set_source_rgba (cr, (double) fileInfo->color.red,
 		(double) fileInfo->color.green,
 		(double) fileInfo->color.blue, 1);
@@ -897,7 +904,7 @@ gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_filei
 	cairo_save (cr);
 
 	draw_image_to_cairo_target (cr, fileInfo->image,
-		1.0/MAX(renderInfo->scaleFactorX, renderInfo->scaleFactorY), DRAW_IMAGE, NULL,
+		1.0/MAX(renderInfo->scaleFactorX, renderInfo->scaleFactorY), drawMode, NULL,
 		renderInfo, TRUE, fileInfo->transform, pixelOutput);
 	cairo_restore (cr);
 }

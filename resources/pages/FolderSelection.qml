@@ -77,7 +77,7 @@ Item{
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        mainView.push("qrc:/resources/pages/FileSelection.qml", {basePath: fileUrl});
+                        mainView.push("qrc:/resources/pages/FileSelection.qml", {basePath: fileUrl, fileType: "profile"});
                     }
                 }
             }

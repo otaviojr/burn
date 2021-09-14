@@ -18,34 +18,51 @@ ApplicationWindow {
 
     property alias mainWindow : mainWindow
 
-    Gerber {
-        id: gerber
+    Rectangle {
+        id: backgroundObject
         anchors.fill: parent
-        property alias gerber : gerber
-    }
-
-    WebSocketServer {
-        id: server
-        listen: true
-        onClientConnected: {
-            webSocket.onTextMessageReceived.connect(function(message) {
-            });
-        }
-        onErrorStringChanged: {
+        color: "white"
+        Gerber {
+            id: gerber
+            anchors.fill: parent
+            realSize: true
+            property alias gerber : gerber
         }
     }
+    MouseArea {
+        anchors.fill: parent
+        enabled: false
+        cursorShape: Qt.BlankCursor
+    }
 
-    /*WebSocket {
+    WebSocket {
         id: socket
-        url: server.url
-        onTextMessageReceived: appendMessage(qsTr("Client received message: %1").arg(message))
+        url: "ws://localhost:6969"
+        active: false
+        onTextMessageReceived: {
+            var projectInfo = JSON.parse(message);
+            gerber.newProject();
+            projectInfo.fileNames.forEach(name => gerber.addFileToProject(name));
+            gerber.mirror = projectInfo.mirror;
+            gerber.rotate = projectInfo.rotate;
+            gerber.negative = projectInfo.negative;
+
+        }
         onStatusChanged: {
-            if (socket.status == WebSocket.Error) {
-                appendMessage(qsTr("Client error: %1").arg(socket.errorString));
-            } else if (socket.status == WebSocket.Closed) {
-                appendMessage(qsTr("Client socket closed."));
+        }
+    }
+
+    Timer {
+        interval: 1000; running: true; repeat: true
+        onTriggered: {
+            if(!socket.active){
+                socket.active = true;
+            } else {
+                if(socket.status === WebSocket.Error || socket.status === WebSocket.Closed){
+                    socket.active = false;
+                }
             }
         }
-    }*/
+    }
 
 }

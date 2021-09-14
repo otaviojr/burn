@@ -5,6 +5,7 @@ import Qt.labs.folderlistmodel 2.15
 
 Item{
     property var basePath: ""
+    property var fileType: ""
 
     Text {
         anchors {
@@ -19,7 +20,7 @@ Item{
         }
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
-        text: "Selecione uma arquivo para abrir"
+        text: fileType == "profile" ? "Selecione uma arquivo para abrir o profile" : "Selecione uma arquivo para abrir o layer de gravação"
     }
 
     GridView {
@@ -82,15 +83,20 @@ Item{
                     anchors.fill: parent
                     onClicked: {
                         if(fileIsDir){
-                            mainView.push("qrc:/resources/pages/FileSelection.qml", {basePath: fileUrl});
+                            mainView.push("qrc:/resources/pages/FileSelection.qml", {basePath: fileUrl, fileType: fileType});
                         } else {
                             var fileToOpen = fileUrl.toString();
                             fileToOpen = fileToOpen.replace(/^(file:\/{3})/,"");
                             fileToOpen = decodeURIComponent(fileToOpen);
 
-                            mainView.pop(null);
-
-                            gerber.openProject(fileToOpen);
+                            if(fileType == "profile"){
+                                gerber.newProject();
+                                gerber.addFileToProject(fileToOpen);
+                                mainView.push("qrc:/resources/pages/FileSelection.qml", {basePath: basePath, fileType: "layer"});
+                            } else {
+                                gerber.addFileToProject(fileToOpen);
+                                mainView.pop(null);
+                            }
                         }
                     }
                 }

@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.14)
 project(burn LANGUAGES CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(QT_QML_DEBUG 1)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)

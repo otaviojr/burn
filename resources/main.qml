@@ -1,5 +1,6 @@
 import QtQuick 2.2
 import QtQuick.Controls.Material 2.12
+import QtWebSockets 1.0
 import Qt5Compat.GraphicalEffects
 
 import GerberRenderer 1.0
@@ -15,7 +16,9 @@ ApplicationWindow {
     visible: true
     title: "Delta3D - Burn"
 
+    property variant clients: []
     property alias mainWindow : mainWindow
+    property variant clientCounter: 0
 
     Item {
         id: frameView
@@ -64,7 +67,7 @@ ApplicationWindow {
                          leftMargin: 10
                      }
                      height: parent.height - 3
-                     text: "Delta3D - Burn"
+                     text: "Delta3D - Burn - Clientes: " + clientCounter
                      verticalAlignment: Text.AlignVCenter
                      font{
                          pointSize: 24
@@ -145,6 +148,18 @@ ApplicationWindow {
                     width: 90
                     height: 100
                     onClicked: {
+                        if(gerber.hasProject){
+                            clients.forEach(socket => {
+                                var fileNames = [];
+                                gerber.fileNames.forEach(name => fileNames.push(name));
+                                socket.sendTextMessage(JSON.stringify({
+                                    fileNames: fileNames,
+                                    mirror: gerber.mirror,
+                                    rotate: gerber.rotate,
+                                    negative: gerber.negative
+                                }));
+                            });
+                        }
                     }
                 }
 
@@ -179,5 +194,31 @@ ApplicationWindow {
         anchors.fill: parent
         enabled: false
         cursorShape: Qt.BlankCursor
+    }
+
+    WebSocketServer {
+        id: server
+        listen: true
+        port: 6969
+        onClientConnected: {
+            clients.push(webSocket);
+            clientCounter++;
+
+            webSocket.onTextMessageReceived.connect(function(message) {
+            });
+
+            webSocket.onStatusChanged.connect(function(status){
+                if(status !== WebSocket.Open){
+                    var index = clients.indexOf(webSocket);
+                    if (index > -1) {
+                      clients.splice(webSocket, 1);
+                      clientCounter--;
+                    }
+                }
+            });
+        }
+        onErrorStringChanged: {
+            appTitle = "Error";
+        }
     }
 }

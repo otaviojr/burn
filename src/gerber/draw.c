@@ -205,7 +205,7 @@ draw_fill (cairo_t *cairoTarget, enum draw_mode drawMode,
 		gerbv_selection_info_t *selectionInfo,
 		gerbv_image_t *image, struct gerbv_net *net)
 {
-	if ((drawMode == DRAW_IMAGE) || (drawMode == DRAW_SELECTIONS))
+	if ((drawMode == DRAW_IMAGE) || (drawMode == DRAW_IMAGE_WITH_BG) || (drawMode == DRAW_SELECTIONS))
 		cairo_fill (cairoTarget);
 	else
 		draw_check_if_object_is_in_selected_area (cairoTarget, FALSE,
@@ -217,7 +217,7 @@ draw_stroke (cairo_t *cairoTarget, enum draw_mode drawMode,
 		gerbv_selection_info_t *selectionInfo,
 		gerbv_image_t *image, struct gerbv_net *net)
 {
-	if ((drawMode == DRAW_IMAGE) || (drawMode == DRAW_SELECTIONS))
+	if ((drawMode == DRAW_IMAGE) || (drawMode == DRAW_IMAGE_WITH_BG) || (drawMode == DRAW_SELECTIONS))
 		cairo_stroke (cairoTarget);
 	else
 		draw_check_if_object_is_in_selected_area (cairoTarget, TRUE,
@@ -392,7 +392,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 		cairo_push_group (cairoTarget);
 
 	while (ls != NULL) {
-		/* 
+		/*
 		 * This handles the exposure thing in the aperture macro
 		 * The exposure is always the first element on stack independent
 		 * of aperture macro.
@@ -446,7 +446,7 @@ gerbv_draw_amacro(cairo_t *cairoTarget, cairo_operator_t clearOperator,
 					ls->parameter[OUTLINE_FIRST_X],
 					ls->parameter[OUTLINE_FIRST_Y]);
 
-			for (int point = 1; point < 
+			for (int point = 1; point <
 					1 + (int)ls->parameter[
 						OUTLINE_NUMBER_OF_POINTS];
 								point++) {
@@ -878,7 +878,7 @@ draw_calc_pnp_mark_coords(struct gerbv_net *start_net,
 	double x, y;
 	struct gerbv_net *net = start_net;
 	const char *label = NULL;
-	
+
 	if (net && net->label)
 		label = net->label->str;
 
@@ -999,11 +999,13 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 		invertPolarity = FALSE;
 
 	if (invertPolarity) {
-		drawOperatorClear = CAIRO_OPERATOR_OVER;
-		drawOperatorDark = CAIRO_OPERATOR_CLEAR;
-		cairo_set_operator (cairoTarget, CAIRO_OPERATOR_OVER);
-		cairo_paint (cairoTarget);
-		cairo_set_operator (cairoTarget, CAIRO_OPERATOR_CLEAR);
+        if(drawMode == DRAW_IMAGE_WITH_BG){
+            drawOperatorClear = CAIRO_OPERATOR_OVER;
+    		drawOperatorDark = CAIRO_OPERATOR_CLEAR;
+            cairo_set_operator (cairoTarget, CAIRO_OPERATOR_OVER);
+    		cairo_paint (cairoTarget);
+    		cairo_set_operator (cairoTarget, CAIRO_OPERATOR_CLEAR);
+        }
 	} else {
 		drawOperatorClear = CAIRO_OPERATOR_CLEAR;
 		drawOperatorDark = CAIRO_OPERATOR_OVER;
@@ -1123,7 +1125,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 			/* Add PNP text label only one time per
 			 * net and if it is not selected. */
 			pnp_net_label_str_prev =
-				net->label->str; 
+				net->label->str;
 
 			if (draw_calc_pnp_mark_coords(net, &mark_x, &mark_y)) {
 				cairo_save (cairoTarget);
@@ -1205,7 +1207,7 @@ draw_image_to_cairo_target (cairo_t *cairoTarget, gerbv_image_t *image,
 
 				/*
 				 * If aperture state is off we allow use of undefined apertures.
-				 * This happens when gerber files starts, but hasn't decided on 
+				 * This happens when gerber files starts, but hasn't decided on
 				 * which aperture to use.
 				 */
 				if (image->aperture[net->aperture] == NULL)

@@ -340,6 +340,7 @@ typedef enum {	GERBV_SELECTION_POINT_CLICK = 1, /*!< the user clicked on a singl
 
 enum draw_mode {
 	DRAW_IMAGE = 0,
+    DRAW_IMAGE_WITH_BG,
 	DRAW_SELECTIONS,
 	FIND_SELECTIONS,
 	FIND_SELECTIONS_TOGGLE,
@@ -872,7 +873,7 @@ void
 gerbv_render_get_boundingbox(gerbv_project_t *gerbvProject, gerbv_render_size_t *boundingbox);
 
 void
-gerbv_render_zoom_real_size(gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo, int dpiX, int dpiY);
+gerbv_render_zoom_real_size(gerbv_project_t *gerbvProject, gerbv_render_info_t *renderInfo, float dpiX, float dpiY);
 
 //! Calculate the zoom and translations to fit the rendered scene inside the given scene size
 void
@@ -896,18 +897,23 @@ void
 gerbv_render_all_layers_to_cairo_target (gerbv_project_t *gerbvProject, cairo_t *cr,
 			gerbv_render_info_t *renderInfo);
 
+void
+gerbv_render_layer_to_cairo_target_for_vector_output(cairo_t *cr, gerbv_fileinfo_t *fileInfo,
+						gerbv_render_info_t *renderInfo, enum draw_mode drawMode);
+
 //! Render a layer to a cairo context
 void
 gerbv_render_layer_to_cairo_target (cairo_t *cr, /*!< the cairo context */
 		gerbv_fileinfo_t *fileInfo, /*!< the layer fileinfo pointer */
-		gerbv_render_info_t *renderInfo /*!< the scene render info */
+		gerbv_render_info_t *renderInfo, /*!< the scene render info */
+        enum draw_mode drawMode
 );
 
 void
 gerbv_render_cairo_set_scale_and_translation(cairo_t *cr, gerbv_render_info_t *renderInfo);
 
 void
-gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo, gboolean pixelOutput );
+gerbv_render_layer_to_cairo_target_without_transforming(cairo_t *cr, gerbv_fileinfo_t *fileInfo, gerbv_render_info_t *renderInfo, enum draw_mode drawMode, gboolean pixelOutput );
 
 double
 gerbv_get_tool_diameter(int toolNumber
