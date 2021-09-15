@@ -1,7 +1,8 @@
-import QtQuick 2.2
+import QtQuick 2.8
 import QtQuick.Controls.Material 2.12
 import QtWebSockets 1.0
 import Qt5Compat.GraphicalEffects
+import QtQuick.VirtualKeyboard
 
 import GerberRenderer 1.0
 import GerberRendererMirror 1.0
@@ -103,6 +104,8 @@ ApplicationWindow {
                         fill: parent
                         rightMargin: 110
                     }
+                    dpix: 1920/6.0
+                    dpiy: 1080/3.4
                     property alias gerber : gerber
                 }
             }
@@ -119,19 +122,19 @@ ApplicationWindow {
                 width: 90
 
                 BurnButton {
-                    id: settings_btn
+                    id: gerber_settings_btn
                     visible: gerber.hasProject
                     anchors{
                         bottom: parent.bottom
                         right: parent.right
-                        bottomMargin: settings_btn.down ? 248 : 250
-                        rightMargin: settings_btn.down ? 8 : 10
+                        bottomMargin: gerber_settings_btn.down ? 248 : 250
+                        rightMargin: gerber_settings_btn.down ? 8 : 10
                     }
                     text: "Config."
                     width: 90
                     height: 100
                     onClicked: {
-                        configDialog.open()
+                        gerberConfigDialog.open()
                     }
                 }
 
@@ -183,11 +186,37 @@ ApplicationWindow {
                     }
                 }
             }
+            BurnButton {
+                id: global_settings_btn
+                anchors{
+                    bottom: parent.bottom
+                    left: parent.left
+                    bottomMargin: global_settings_btn.down ? 8 : 10
+                    leftMargin: global_settings_btn.down ? 8 : 10
+                }
+                text: "Ajustes"
+                width: 90
+                height: 100
+                onClicked: {
+                    configDialog.open()
+                }
+            }
         }
+    }
+
+    InputPanel {
+        id: inputPanel
+        y: Qt.inputMethod.visible ? parent.height - inputPanel.height : parent.height
+        anchors.left: parent.left
+        anchors.right: parent.right
     }
 
     ConfigDialog {
         id: configDialog
+    }
+
+    GerberConfigDialog {
+        id: gerberConfigDialog
     }
 
     MouseArea {

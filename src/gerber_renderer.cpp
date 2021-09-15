@@ -12,9 +12,16 @@
 GerberRenderer::GerberRenderer(QQuickItem *parent)
     : QQuickItem(parent)
 {
-    setFlag(QQuickItem::ItemHasContents);
-    this->m_color = QColor(QLatin1String("red"));
+    this->gerbv_project = NULL;
+    this->m_dpix = 0;
+    this->m_dpiy = 0;
     this->m_realSize = false;
+    setFlag(QQuickItem::ItemHasContents);
+}
+
+GerberRenderer::~GerberRenderer()
+{
+    this->closeProject();
 }
 
 void GerberRenderer::closeProject()
@@ -77,24 +84,29 @@ bool GerberRenderer::hasProject()
     return (this->gerbv_project && this->gerbv_project->last_loaded > 0);
 }
 
-QColor GerberRenderer::color() const
+float GerberRenderer::dpix() const
 {
-    return m_color;
+    return this->m_dpix;
 }
 
-void GerberRenderer::setColor(const QColor &color)
+void GerberRenderer::setDpix(const float dpix)
 {
-    m_color = color;
+    this->m_dpix = dpix;
+    this->update();
+    emit dpixChanged(dpix);
+
 }
 
-QColor GerberRenderer::backgroundColor() const
+float GerberRenderer::dpiy() const
 {
-    return m_backgroundColor;
+    return this->m_dpiy;
 }
 
-void GerberRenderer::setBackgroundColor(const QColor &color)
+void GerberRenderer::setDpiy(const float dpiy)
 {
-    m_backgroundColor = color;
+    this->m_dpiy = dpiy;
+    this->update();
+    emit dpiyChanged(dpiy);
 }
 
 bool GerberRenderer::realSize() const {
@@ -202,8 +214,8 @@ QSGNode *GerberRenderer::updatePaintNode(QSGNode * oldNode, QQuickItem::UpdatePa
          * gerbv_render_translate_to_fit_display(this->gerbv_project, &renderInfo);
          */
 
-         if(this->m_realSize){
-             gerbv_render_zoom_real_size (this->gerbv_project, &renderInfo, (1920/6.00), (1080/3.34));
+         if(this->m_realSize && this->m_dpix > 0 && this->m_dpiy > 0){
+             gerbv_render_zoom_real_size (this->gerbv_project, &renderInfo, this->m_dpix, this->m_dpiy);
              gerbv_render_translate_to_fit_display(this->gerbv_project, &renderInfo);
              if(this->gerbv_project->file[0]) this->gerbv_project->file[0]->isVisible = false;
          } else {

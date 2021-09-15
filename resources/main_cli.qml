@@ -1,4 +1,4 @@
-import QtQuick 2.2
+import QtQuick 2.8
 import QtQuick.Controls.Material 2.12
 import QtWebSockets 1.0
 import Qt5Compat.GraphicalEffects
@@ -26,6 +26,8 @@ ApplicationWindow {
             id: gerber
             anchors.fill: parent
             realSize: true
+            dpix: 1920/6.0
+            dpiy: 1080/3.4
             property alias gerber : gerber
         }
     }

@@ -2,18 +2,18 @@ import QtQuick 2.2
 import QtQuick.Layouts 1.1
 import QtQuick.Controls.Material 2.12
 
-import GerberRendererMirror 1.0
+import ".."
 
 Dialog {
     id: configDialog
     modal: true
     focus: true
-    title: "Project Settings"
+    title: "Global Settings"
     x: (mainWindow.width - width) / 2
     y: 0
     width: mainWindow.width/1.5
 
-    contentHeight: settingsContent.height
+    contentHeight: configContent.height
 
     standardButtons: Dialog.Ok
 
@@ -22,7 +22,7 @@ Dialog {
     }
 
     RowLayout {
-        id: settingsContent
+        id: configContent
         spacing: 10
         Layout.fillWidth: true
 
@@ -34,50 +34,27 @@ Dialog {
             }
             ColumnLayout {
                 spacing: 2
-                width: ((configDialog.width-80)/3)-2
+                width: ((configDialog.width-80)/2)-2
 
                 Label {
-                    text: "Inverter Eixo:"
+                    text: "DPI X:"
                 }
 
-                RadioButton {
-                    text: "Nenhum"
-                    checked: gerber.mirror == GerberMirror.NONE ? true : false
-                    onReleased: {
-                        gerber.mirror = GerberMirror.NONE
-                    }
-                }
-                RadioButton {
-                    text: "Eixo X"
-                    checked: gerber.mirror == GerberMirror.X ? true : false
-                    onReleased: {
-                        gerber.mirror = GerberMirror.X
-                    }
-                }
-                RadioButton {
-                    text: "Eixo Y"
-                    checked: gerber.mirror == GerberMirror.Y ? true : false
-                    onReleased: {
-                        gerber.mirror = GerberMirror.Y
-                    }
-                }
-                RadioButton {
-                    text: "Eixo X&Y"
-                    checked: gerber.mirror == GerberMirror.XY ? true : false
-                    onReleased: {
-                        gerber.mirror = GerberMirror.XY
-                    }
+                DoubleSpinBox {
+                    id: c_dpiX
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    value: (1920/6.1)
                 }
             }
         }
 
         Rectangle{
             anchors {
-                top: settingsContent.top
-                bottom: settingsContent.bottom
+                top: configContent.top
+                bottom: configContent.bottom
             }
             width: 2
-            height: settingsContent.height
+            height: configContent.height
             color: "black"
         }
 
@@ -89,78 +66,13 @@ Dialog {
             ColumnLayout {
                 spacing: 2
                 width: (configDialog.width-80)/3
-
                 Label {
-                    text: "Exibição:"
+                    text: "DPI Y:"
                 }
-
-                RadioButton {
-                    text: "Imagem Normal"
-                    checked: gerber.negative ? false : true
-                    onReleased: {
-                        gerber.negative = false
-                    }
-                }
-                RadioButton {
-                    text: "Imagem Negativa"
-                    checked: gerber.negative ? true : false
-                    onReleased: {
-                        gerber.negative = true
-                    }
-                }
-            }
-        }
-
-        Rectangle{
-            anchors {
-                top: settingsContent.top
-                bottom: settingsContent.bottom
-            }
-            width: 2
-            height: settingsContent.height
-            color: "black"
-        }
-
-        Row{
-            anchors {
-                top: parent.top
-                topMargin: 10
-            }
-            ColumnLayout {
-                spacing: 2
-                width: ((configDialog.width-80)/3)-2
-
-                Label {
-                    text: "Rotação:"
-                }
-
-                RadioButton {
-                    text: "Nenhuma"
-                    checked: gerber.rotate == 0 ? true : false
-                    onReleased: {
-                        gerber.rotate = 0
-                    }
-                }
-                RadioButton {
-                    text: "90º"
-                    checked: gerber.rotate == 90 ? true : false
-                    onReleased: {
-                        gerber.rotate = 90
-                    }
-                }
-                RadioButton {
-                    text: "180º"
-                    checked: gerber.rotate == 180 ? true : false
-                    onReleased: {
-                        gerber.rotate = 180
-                    }
-                }
-                RadioButton {
-                    text: "270º"
-                    checked: gerber.rotate == 270 ? true : false
-                    onReleased: {
-                        gerber.rotate = 270
-                    }
+                DoubleSpinBox {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    id: c_dpiY
+                    value: (1080/3.4)
                 }
             }
         }

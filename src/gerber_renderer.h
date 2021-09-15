@@ -11,30 +11,31 @@ class GerberRenderer : public QQuickItem
 {
     Q_OBJECT
     Q_PROPERTY(QStringList fileNames READ fileNames NOTIFY fileNamesChanged)
-    Q_PROPERTY(QColor color READ color WRITE setColor)
-    Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor)
     Q_PROPERTY(bool hasProject READ hasProject NOTIFY projectChanged)
     Q_PROPERTY(bool negative READ negative WRITE setNegative NOTIFY negativeChanged)
-    Q_PROPERTY(GerberRendererMirror::GerberMirror mirror READ mirror WRITE setMirror NOTIFY mirrorChanged)
-    Q_PROPERTY(float rotate READ rotate WRITE setRotate NOTIFY rotateChanged)
     Q_PROPERTY(bool realSize READ realSize WRITE setRealSize NOTIFY realSizeChanged)
+    Q_PROPERTY(float rotate READ rotate WRITE setRotate NOTIFY rotateChanged)
+    Q_PROPERTY(float dpix READ dpix WRITE setDpix NOTIFY dpixChanged)
+    Q_PROPERTY(float dpiy READ dpiy WRITE setDpiy NOTIFY dpiyChanged)
+    Q_PROPERTY(GerberRendererMirror::GerberMirror mirror READ mirror WRITE setMirror NOTIFY mirrorChanged)
     QML_ELEMENT
 
 public:
-    GerberRenderer(QQuickItem *parent = 0);
+    GerberRenderer(QQuickItem *parent = nullptr);
+    ~GerberRenderer();
 
     QStringList fileNames() const;
-    QColor color() const;
-    void setColor(const QColor &color);
-    QColor backgroundColor() const;
-    void setBackgroundColor(const QColor &color);
-
     bool negative() const;
     void setNegative(const bool &negative);
     GerberRendererMirror::GerberMirror mirror() const;
     void setMirror(const GerberRendererMirror::GerberMirror &mirror);
     float rotate() const;
     void setRotate(const float &rotate);
+
+    float dpix() const;
+    void setDpix(const float dpix);
+    float dpiy() const;
+    void setDpiy(const float dpiy);
 
     bool realSize() const;
     void setRealSize(const bool &negative);
@@ -46,10 +47,10 @@ public:
     Q_INVOKABLE bool hasProject();
     Q_INVOKABLE bool addFileToProject(const QString &fileName);
 private:
-    QColor m_color;
-    QColor m_backgroundColor;
     bool m_realSize;
     gerbv_project_t * gerbv_project;
+    float m_dpix;
+    float m_dpiy;
 
 signals:
     void fileNamesChanged(const QStringList fileName);
@@ -58,6 +59,8 @@ signals:
     void rotateChanged(const float rotate);
     void mirrorChanged(const GerberRendererMirror::GerberMirror mirror);
     void negativeChanged(const bool negative);
+    void dpixChanged(const float dpix);
+    void dpiyChanged(const float dpiy);
 };
 
 #endif
