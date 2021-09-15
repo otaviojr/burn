@@ -20,7 +20,7 @@ Item{
         }
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
-        text: fileType == "profile" ? "Selecione uma arquivo para abrir o profile" : "Selecione uma arquivo para abrir o layer de gravação"
+        text: fileType == "profile" ? "Selecione o arquivo de PROFILE" : "Selecione o arquivo com o LAYER"
     }
 
     GridView {

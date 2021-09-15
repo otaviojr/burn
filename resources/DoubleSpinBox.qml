@@ -3,10 +3,12 @@ import QtQuick.Controls.Material 2.12
 import QtQuick.Layouts 1.1
 
 Item {
+    id: doubleSpinBox
     width: 120
     height: 40
 
     property var value
+    signal changed
 
     RowLayout {
         anchors.fill: parent
@@ -27,6 +29,7 @@ Item {
                 onClicked: {
                     value = (parseFloat(spinContent.text) - 0.05).toFixed(2);
                     spinContent.text = value.toString();
+                    doubleSpinBox.changed(value);
                 }
             }
         }
@@ -76,6 +79,7 @@ Item {
                 onClicked: {
                     value = (parseFloat(spinContent.text) + 0.05).toFixed(2);
                     spinContent.text = value.toString();
+                    doubleSpinBox.changed(value);
                 }
             }
         }

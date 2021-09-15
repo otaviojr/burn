@@ -42,13 +42,21 @@ ApplicationWindow {
         url: "ws://localhost:6969"
         active: false
         onTextMessageReceived: {
-            var projectInfo = JSON.parse(message);
-            gerber.newProject();
-            projectInfo.fileNames.forEach(name => gerber.addFileToProject(name));
-            gerber.mirror = projectInfo.mirror;
-            gerber.rotate = projectInfo.rotate;
-            gerber.negative = projectInfo.negative;
-
+            var obj = JSON.parse(message);
+            if(obj.action == "play"){
+                gerber.newProject();
+                obj.fileNames.forEach(name => gerber.addFileToProject(name));
+                gerber.mirror = obj.mirror;
+                gerber.rotate = obj.rotate;
+                gerber.negative = obj.negative;
+            } else if (obj.action == "config"){
+                if(obj.dpix){
+                    gerber.dpix = obj.dpix;
+                }
+                if(obj.dpiy){
+                    gerber.dpiy = obj.dpix;
+                }
+            }
         }
         onStatusChanged: {
         }

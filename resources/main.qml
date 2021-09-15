@@ -21,6 +21,12 @@ ApplicationWindow {
     property alias mainWindow : mainWindow
     property variant clientCounter: 0
 
+    function sendTextMessage(message){
+        clients.forEach(socket => {
+            socket.sendTextMessage(message);
+        });
+    }
+
     Item {
         id: frameView
         anchors.fill: parent
@@ -152,16 +158,15 @@ ApplicationWindow {
                     height: 100
                     onClicked: {
                         if(gerber.hasProject){
-                            clients.forEach(socket => {
-                                var fileNames = [];
-                                gerber.fileNames.forEach(name => fileNames.push(name));
-                                socket.sendTextMessage(JSON.stringify({
-                                    fileNames: fileNames,
-                                    mirror: gerber.mirror,
-                                    rotate: gerber.rotate,
-                                    negative: gerber.negative
-                                }));
-                            });
+                            var fileNames = [];
+                            gerber.fileNames.forEach(name => fileNames.push(name));
+                            sendTextMessage(JSON.stringify({
+                                action: "play",
+                                fileNames: fileNames,
+                                mirror: gerber.mirror,
+                                rotate: gerber.rotate,
+                                negative: gerber.negative
+                            }));
                         }
                     }
                 }

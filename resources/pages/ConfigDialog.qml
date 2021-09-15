@@ -44,6 +44,12 @@ Dialog {
                     id: c_dpiX
                     anchors.horizontalCenter: parent.horizontalCenter
                     value: (1920/6.1)
+                    onChanged: value => {
+                        sendTextMessage(JSON.stringify({
+                            action: "config",
+                            dpix: value
+                        }));
+                    }
                 }
             }
         }
@@ -73,6 +79,12 @@ Dialog {
                     anchors.horizontalCenter: parent.horizontalCenter
                     id: c_dpiY
                     value: (1080/3.4)
+                    onChanged: value => {
+                        sendTextMessage(JSON.stringify({
+                            action: "config",
+                            dpiy: value
+                        }));
+                    }
                 }
             }
         }
