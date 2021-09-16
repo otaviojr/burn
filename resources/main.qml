@@ -18,10 +18,35 @@ ApplicationWindow {
     title: "Delta3D - Burn"
 
     property variant clients: []
-    property alias mainWindow : mainWindow
     property variant clientCounter: 0
 
-    function sendTextMessage(message){
+    property alias mainWindow : mainWindow
+
+    function startPresentation(){
+        if(gerber.hasProject){
+            var fileNames = [];
+            gerber.fileNames.forEach(name => fileNames.push(name));
+            sendCommandTextMessage(JSON.stringify({
+                action: "play",
+                fileNames: fileNames,
+                mirror: gerber.mirror,
+                rotate: gerber.rotate,
+                negative: gerber.negative,
+                dpix: gerber.dpix,
+                dpiy: gerber.dpiy
+            }));
+        }
+    }
+
+    function endPresentation(){
+        if(gerber.hasProject){
+            sendCommandTextMessage(JSON.stringify({
+                action: "stop"
+            }));
+        }
+    }
+
+    function sendCommandTextMessage(message){
         clients.forEach(socket => {
             socket.sendTextMessage(message);
         });
@@ -110,8 +135,8 @@ ApplicationWindow {
                         fill: parent
                         rightMargin: 110
                     }
-                    dpix: 1920/6.0
-                    dpiy: 1080/3.4
+                    dpix: 316.50
+                    dpiy: 320.10
                     property alias gerber : gerber
                 }
             }
@@ -157,17 +182,7 @@ ApplicationWindow {
                     width: 90
                     height: 100
                     onClicked: {
-                        if(gerber.hasProject){
-                            var fileNames = [];
-                            gerber.fileNames.forEach(name => fileNames.push(name));
-                            sendTextMessage(JSON.stringify({
-                                action: "play",
-                                fileNames: fileNames,
-                                mirror: gerber.mirror,
-                                rotate: gerber.rotate,
-                                negative: gerber.negative
-                            }));
-                        }
+                        startDialog.open();
                     }
                 }
 
@@ -216,12 +231,20 @@ ApplicationWindow {
         anchors.right: parent.right
     }
 
+    StartDialog {
+        id: startDialog
+    }
+
     ConfigDialog {
         id: configDialog
     }
 
     GerberConfigDialog {
         id: gerberConfigDialog
+    }
+
+    ExecutingDialog {
+        id: executingDialog
     }
 
     MouseArea {
@@ -234,7 +257,7 @@ ApplicationWindow {
         id: server
         listen: true
         port: 6969
-        onClientConnected: {
+        onClientConnected: function(webSocket){
             clients.push(webSocket);
             clientCounter++;
 

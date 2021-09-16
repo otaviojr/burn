@@ -43,9 +43,9 @@ Dialog {
                 DoubleSpinBox {
                     id: c_dpiX
                     anchors.horizontalCenter: parent.horizontalCenter
-                    value: (1920/6.1)
+                    value: gerber.dpix
                     onChanged: value => {
-                        sendTextMessage(JSON.stringify({
+                        mainWindow.sendCommandTextMessage(JSON.stringify({
                             action: "config",
                             dpix: value
                         }));
@@ -78,9 +78,9 @@ Dialog {
                 DoubleSpinBox {
                     anchors.horizontalCenter: parent.horizontalCenter
                     id: c_dpiY
-                    value: (1080/3.4)
+                    value: gerber.dpiy
                     onChanged: value => {
-                        sendTextMessage(JSON.stringify({
+                        mainWindow.sendCommandTextMessage(JSON.stringify({
                             action: "config",
                             dpiy: value
                         }));

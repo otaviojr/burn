@@ -49,10 +49,12 @@ int main(int argc, char *argv[])
       engine.load(QUrl("qrc:/resources/main.qml"));
       engine.load(QUrl("qrc:/resources/BurnButton.qml"));
       engine.load(QUrl("qrc:/resources/DoubleSpinBox.qml"));
+      engine.load(QUrl("qrc:/resources/pages/StartDialog.qml"));
       engine.load(QUrl("qrc:/resources/pages/FileSelection.qml"));
       engine.load(QUrl("qrc:/resources/pages/FolderSelection.qml"));
       engine.load(QUrl("qrc:/resources/pages/ConfigDialog.qml"));
       engine.load(QUrl("qrc:/resources/pages/GerberConfigDialog.qml"));
+      engine.load(QUrl("qrc:/resources/pages/ExecutingDialog.qml"));
     }
     if (engine.rootObjects().isEmpty())
         return -1;

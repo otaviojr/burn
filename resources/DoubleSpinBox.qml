@@ -8,7 +8,7 @@ Item {
     height: 40
 
     property var value
-    signal changed
+    signal changed(var value)
 
     RowLayout {
         anchors.fill: parent
@@ -24,11 +24,12 @@ Item {
 
             Button {
                 anchors.fill: parent
+                autoRepeat: true
                 text: "-"
 
                 onClicked: {
-                    value = (parseFloat(spinContent.text) - 0.05).toFixed(2);
-                    spinContent.text = value.toString();
+                    value = parseFloat((parseFloat(spinContent.text) - 0.05).toFixed(2));
+                    //spinContent.text = value.toString();
                     doubleSpinBox.changed(value);
                 }
             }
@@ -74,11 +75,12 @@ Item {
 
             Button{
                 anchors.fill: parent
+                autoRepeat: true
                 text: "+"
 
                 onClicked: {
-                    value = (parseFloat(spinContent.text) + 0.05).toFixed(2);
-                    spinContent.text = value.toString();
+                    value = parseFloat((parseFloat(spinContent.text) + 0.05).toFixed(2));
+                    //spinContent.text = value.toString();
                     doubleSpinBox.changed(value);
                 }
             }

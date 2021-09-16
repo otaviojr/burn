@@ -21,13 +21,11 @@ ApplicationWindow {
     Rectangle {
         id: backgroundObject
         anchors.fill: parent
-        color: "white"
+        color: "red"
         Gerber {
             id: gerber
             anchors.fill: parent
             realSize: true
-            dpix: 1920/6.0
-            dpiy: 1080/3.4
             property alias gerber : gerber
         }
     }
@@ -41,20 +39,27 @@ ApplicationWindow {
         id: socket
         url: "ws://localhost:6969"
         active: false
-        onTextMessageReceived: {
+        onTextMessageReceived: function(message){
             var obj = JSON.parse(message);
             if(obj.action == "play"){
+                console.error("play");
                 gerber.newProject();
                 obj.fileNames.forEach(name => gerber.addFileToProject(name));
                 gerber.mirror = obj.mirror;
                 gerber.rotate = obj.rotate;
                 gerber.negative = obj.negative;
-            } else if (obj.action == "config"){
+                gerber.dpix = obj.dpix;
+                gerber.dpiy = obj.dpiy;
+            } else if(obj.action == "stop") {
+                console.error("stop");
+                gerber.closeProject();
+            } else if(obj.action == "config") {
+                console.error("config");
                 if(obj.dpix){
                     gerber.dpix = obj.dpix;
                 }
                 if(obj.dpiy){
-                    gerber.dpiy = obj.dpix;
+                    gerber.dpiy = obj.dpiy;
                 }
             }
         }

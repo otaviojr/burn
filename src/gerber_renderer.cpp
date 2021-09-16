@@ -199,12 +199,13 @@ QSGNode *GerberRenderer::updatePaintNode(QSGNode * oldNode, QQuickItem::UpdatePa
     QImage image(w, h, QImage::Format_RGBA8888);
     image.fill(QColor("transparent"));
 
-    auto const surf(cairo_image_surface_create_for_data(image.bits(),
-      CAIRO_FORMAT_RGB24, w, h, image.bytesPerLine()));
-
-    auto const cr(cairo_create(surf));
-
     if(this->gerbv_project && this->gerbv_project->last_loaded > 0){
+
+        auto const surf(cairo_image_surface_create_for_data(image.bits(),
+          CAIRO_FORMAT_RGB24, w, h, image.bytesPerLine()));
+
+        auto const cr(cairo_create(surf));
+
         gerbv_render_info_t renderInfo = {1.0, 1.0, 0.0, 0.0, GERBV_RENDER_TYPE_CAIRO_HIGH_QUALITY, (int)w, (int)h};
 
         /*
@@ -223,6 +224,9 @@ QSGNode *GerberRenderer::updatePaintNode(QSGNode * oldNode, QQuickItem::UpdatePa
          }
 
         gerbv_render_all_layers_to_cairo_target_for_vector_output(this->gerbv_project, cr, &renderInfo);
+
+        cairo_surface_destroy(surf);
+        cairo_destroy(cr);
     }
 
     QSGSimpleTextureNode *node = static_cast<QSGSimpleTextureNode *>(oldNode);
@@ -234,9 +238,6 @@ QSGNode *GerberRenderer::updatePaintNode(QSGNode * oldNode, QQuickItem::UpdatePa
 
     QSGTexture *texture = window()->createTextureFromImage(image);
     node->setTexture(texture);
-
-    cairo_surface_destroy(surf);
-    cairo_destroy(cr);
 
     node->setRect(boundingRect());
     return node;
