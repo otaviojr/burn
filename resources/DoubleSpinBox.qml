@@ -10,6 +10,8 @@ Item {
     property var value
     signal changed(var value)
 
+    FontLoader { id: webFont; source: "qrc:/resources/fonts/Roboto-Regular.ttf" }
+
     RowLayout {
         anchors.fill: parent
         height: parent.height
@@ -26,6 +28,11 @@ Item {
                 anchors.fill: parent
                 autoRepeat: true
                 text: "-"
+
+                font {
+                    pointSize: 22
+                    family: webFont.name
+                }
 
                 onClicked: {
                     value = parseFloat((parseFloat(spinContent.text) - 0.05).toFixed(2));
@@ -77,6 +84,11 @@ Item {
                 anchors.fill: parent
                 autoRepeat: true
                 text: "+"
+
+                font {
+                    pointSize: 22
+                    family: webFont.name
+                }
 
                 onClicked: {
                     value = parseFloat((parseFloat(spinContent.text) + 0.05).toFixed(2));

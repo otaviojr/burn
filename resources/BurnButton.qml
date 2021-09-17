@@ -13,10 +13,15 @@ Item {
         id: controlBt
         anchors.fill: parent
 
+        FontLoader { id: webFont; source: "qrc:/resources/fonts/Roboto-Regular.ttf" }
+
         contentItem: Text {
             id: buttonText
             text: controlBt.text
-            font.pixelSize: 18
+            font {
+                pointSize: 14
+                family: webFont.name
+            }
             opacity: enabled ? 1.0 : 0.3
             color: "black"
             horizontalAlignment: Text.AlignHCenter

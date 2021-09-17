@@ -105,6 +105,8 @@ ApplicationWindow {
                      context.fill();
                  }
 
+                 FontLoader { id: webFont; source: "qrc:/resources/fonts/Roboto-Bold.ttf" }
+
                  Text {
                      anchors {
                          top: parent.top
@@ -117,6 +119,7 @@ ApplicationWindow {
                      verticalAlignment: Text.AlignVCenter
                      font{
                          pointSize: 24
+                         family: webFont.name
                      }
                      color: "white"
                 }

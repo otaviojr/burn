@@ -7,6 +7,8 @@ Item{
     property var basePath: ""
     property var fileType: ""
 
+    FontLoader { id: webFont; source: "qrc:/resources/fonts/Roboto-Bold.ttf" }
+
     Text {
         anchors {
             top: parent.top
@@ -17,6 +19,7 @@ Item{
         id: titleView
         font {
             pointSize: 20
+            family: webFont.name
         }
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
