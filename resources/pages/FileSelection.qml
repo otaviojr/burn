@@ -80,7 +80,7 @@ Item{
                     elide: fileIsDir ? Text.ElideMiddle : Text.ElideLeft
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                text: fileIsDir ? fileName : fileName.replace(/\..*$/,"")
+                    text: fileIsDir ? fileName : fileName.replace(/\..*$/,"")
                 }
                 MouseArea {
                     anchors.fill: parent

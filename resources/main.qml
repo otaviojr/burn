@@ -6,6 +6,7 @@ import QtQuick.VirtualKeyboard
 
 import GerberRenderer 1.0
 import GerberRendererMirror 1.0
+import WifiModel 1.0
 
 import "."
 import "pages"
@@ -50,6 +51,10 @@ ApplicationWindow {
         clients.forEach(socket => {
             socket.sendTextMessage(message);
         });
+    }
+
+    WifiModel {
+        id: wifiModel
     }
 
     Item {
@@ -122,6 +127,20 @@ ApplicationWindow {
                          family: webFont.name
                      }
                      color: "white"
+                }
+
+                Image {
+                    anchors {
+                        right: parent.right
+                        top: parent.top
+                        topMargin: 15
+                        rightMargin: 30
+                    }
+
+                    width: 30
+                    height: 30
+
+                    source: "images/v1/wifi.svg"
                 }
             }
         }

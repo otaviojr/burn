@@ -24,11 +24,26 @@ find_package(Qt6 COMPONENTS Qml)
 find_package(Qt6 COMPONENTS Quick)
 find_package(Qt6 COMPONENTS QuickControls2)
 find_package(Qt6 COMPONENTS WebSockets)
+find_package(Qt6 COMPONENTS DBus)
+
+set_source_files_properties(src/wifi/iwd_dbusinterface.xml
+    PROPERTIES
+    INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/src/wifi/custom_types.h
+    )
+
+qt6_add_dbus_interface(interface_srcs
+    src/wifi/iwd_dbusinterface.xml
+    DbusInterface
+)
 
 qt_add_executable(burn
     src/main.cpp
     src/gerber_renderer.cpp
     src/gerber_renderer_mirror.cpp
+    src/wifi_model.cpp
+    src/wifi/iwd.cpp
+    src/wifi/custom_types.h
+    ${interface_srcs}
 )
 
 set_target_properties(burn PROPERTIES
@@ -45,6 +60,7 @@ target_link_libraries(burn PUBLIC
     Qt::Quick
     Qt::QuickControls2
     Qt::WebSockets
+    Qt::DBus
     gerbv
 )
 
@@ -70,6 +86,7 @@ set(burn_resource_files
     "resources/pages/ExecutingDialog.qml"
     "resources/images/v1/folder.png"
     "resources/images/v1/file.png"
+    "resources/images/v1/wifi.svg"
     "resources/qtquickcontrols2.conf"
     "resources/fonts/Roboto-Regular.ttf"
     "resources/fonts/Roboto-Bold.ttf"
