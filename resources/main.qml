@@ -15,7 +15,7 @@ ApplicationWindow {
     width: 800
     height: 480
     visible: true
-    title: "Delta3D - Burn"
+    title: "Delta 3D - UV Exposure"
 
     property variant clients: []
     property variant clientCounter: 0
@@ -66,15 +66,29 @@ ApplicationWindow {
             height: 60
 
             Canvas{
-                anchors.fill: parent
+                id: titleCanvas
+                anchors {
+                        top: parent.top
+                        left: parent.left
+                }
+
+                property real viewScale: parent.scale
+
+                width: parent.width * viewScale
+                height: parent.height * viewScale
+
+                scale: 1.0/viewScale
+                antialiasing: true
+                transformOrigin: Item.TopLeft
+
                 onPaint:{
                      var context = getContext("2d");
 
                      context.beginPath();
                      context.moveTo(0, 0);
-                     context.lineTo(parent.width-76, 0);
-                     context.lineTo(parent.width-109, parent.height);
-                     context.lineTo(0, parent.height);
+                     context.lineTo(titleCanvas.width-76, 0);
+                     context.lineTo(titleCanvas.width-109, titleCanvas.height);
+                     context.lineTo(0, titleCanvas.height);
                      context.closePath();
 
                      context.fillStyle = "#909090";
@@ -82,9 +96,9 @@ ApplicationWindow {
 
                      context.beginPath();
                      context.moveTo(0, 0);
-                     context.lineTo(parent.width-80, 0);
-                     context.lineTo(parent.width-110, parent.height-3);
-                     context.lineTo(0, parent.height-3);
+                     context.lineTo(titleCanvas.width-80, 0);
+                     context.lineTo(titleCanvas.width-110, titleCanvas.height-3);
+                     context.lineTo(0, titleCanvas.height-3);
                      context.closePath();
 
                      context.fillStyle = "#0000FF";
@@ -99,7 +113,7 @@ ApplicationWindow {
                          leftMargin: 10
                      }
                      height: parent.height - 3
-                     text: "Delta3D - Burn - Clientes: " + clientCounter
+                     text: "Delta 3D - UV Exposure - Mon: " + clientCounter
                      verticalAlignment: Text.AlignVCenter
                      font{
                          pointSize: 24
@@ -218,6 +232,7 @@ ApplicationWindow {
                 width: 90
                 height: 100
                 onClicked: {
+                    startPresentation();
                     configDialog.open()
                 }
             }

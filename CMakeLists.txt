@@ -71,6 +71,9 @@ set(burn_resource_files
     "resources/images/v1/folder.png"
     "resources/images/v1/file.png"
     "resources/qtquickcontrols2.conf"
+    "resources/fonts/Roboto-Regular.ttf"
+    "resources/fonts/Roboto-Bold.ttf"
+    "resources/fonts/Roboto-Black.ttf"
 )
 
 qt6_add_resources(burn "burn"

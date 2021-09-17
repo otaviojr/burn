@@ -19,6 +19,15 @@ Dialog {
 
     onAccepted: {
         configDialog.close()
+        mainWindow.endPresentation();
+    }
+
+    onDiscarded: {
+        mainWindow.endPresentation();
+    }
+
+    onRejected: {
+        mainWindow.endPresentation();
     }
 
     RowLayout {

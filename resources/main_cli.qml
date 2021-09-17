@@ -21,7 +21,7 @@ ApplicationWindow {
     Rectangle {
         id: backgroundObject
         anchors.fill: parent
-        color: "red"
+        color: gerber.hasProject ? gerber.negative ? "white" : "black" : "black"
         Gerber {
             id: gerber
             anchors.fill: parent

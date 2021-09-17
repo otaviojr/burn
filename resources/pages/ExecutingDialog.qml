@@ -43,31 +43,73 @@ Popup {
                 width: executingDialog.width - executingDialog.rightPadding - executingDialog.leftPadding
 
                 Canvas{
+                    id: counterCanvas
+
                     anchors {
                         horizontalCenter: parent.horizontalCenter
                         top: parent.top
                     }
-                    id: counterCanvas
-                    width: executingDialog.width - executingDialog.leftPadding - executingDialog.rightPadding
-                    height: executingDialog.height - executingDialog.topPadding - executingDialog.bottomPadding
+
+                    property real viewScale: executingDialog.scale
+
+                    scale: 1.0/viewScale
+                    antialiasing: true
+                    transformOrigin: Item.TopLeft
+
+                    width: (executingDialog.width - executingDialog.leftPadding - executingDialog.rightPadding) * viewScale
+                    height: (executingDialog.height - executingDialog.topPadding - executingDialog.bottomPadding - 50) * viewScale
+
+                    FontLoader { id: webFont; source: "qrc:/resources/fonts/Roboto-Bold.ttf" }
+
                     onPaint:{
                          var context = getContext("2d");
 
-                         if(counter == 0){
-                             context.clearRect(0, 0, counterCanvas.width, counterCanvas.height);
-                         }
+                         context.clearRect(0, 0, counterCanvas.width, counterCanvas.height);
+
                          context.beginPath();
-                         context.arc(counterCanvas.width/2, counterCanvas.height/2, counterCanvas.width/4, 0, 2 * Math.PI);
+                         context.arc(counterCanvas.width/2, (counterCanvas.height/2), (Math.min(counterCanvas.height, counterCanvas.width)/2)-10, 0, 2 * Math.PI);
                          context.strokeStyle = '#A0A0A0';
-                         context.lineWidth = 1;
+                         context.lineWidth = 2 * viewScale;
                          context.stroke();
                          if(targetCounter > 0){
                              context.beginPath();
-                             context.arc(counterCanvas.width/2, counterCanvas.height/2, counterCanvas.width/4, - Math.PI/2, ((2 * Math.PI*counter)/targetCounter) - Math.PI/2);
+
+                             context.arc(counterCanvas.width/2, (counterCanvas.height/2),
+                                (Math.min(counterCanvas.height, counterCanvas.width)/2)-10, - Math.PI/2,
+                                ((2 * Math.PI*counter)/targetCounter) - Math.PI/2);
+
                              context.strokeStyle = '#0000FF';
-                             context.lineWidth = 3;
+                             context.lineWidth = 4 * viewScale;
                              context.stroke();
                          }
+
+                         context.fillStyle = "#0000FF";
+                         //context.font = '20px ' + webFont.name;
+                         context.font='bold 40px "%1"'.arg(webFont.name);
+                         var minutes = Math.floor((targetCounter - counter) / 60);
+                         var seconds = Math.ceil((targetCounter - counter) % 60);
+
+                         var textString = String(minutes).padStart(2, '0') + ":" + String(seconds).padStart(2, '0'),
+                         textMeasure = context.measureText(textString);
+                         context.textBaseline = "middle"
+                         context.fillText(textString , (counterCanvas.width/2) - (textMeasure.width / 2),
+                                            counterCanvas.height/2);
+                     }
+                 }
+
+                 Button {
+                     anchors {
+                         top: counterCanvas.bottom
+                         bottom: parent.bottom
+                         horizontalCenter: parent.horizontalCenter
+                         topMargin: 10
+                     }
+
+                     text: "Cancelar"
+
+                     onClicked: {
+                         mainWindow.endPresentation();
+                         executingDialog.close();
                      }
                  }
             }
@@ -85,6 +127,7 @@ Popup {
                 targetCounter = 0;
                 counter = 0;
                 mainWindow.endPresentation();
+                executingDialog.close();
             }
             counterCanvas.requestPaint();
         }
