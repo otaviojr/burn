@@ -59,8 +59,8 @@ public slots:
     void scan();
 
 signals:
-    void knownNetworkAdded(const QString &id, const QString &name);
-    void visibleNetworkAdded(const QString &id, const QString &name);
+    void knownNetworkAdded(const QString &id, const QString &name, const QString &type);
+    void visibleNetworkAdded(const QString &id, const QString &name, const QString &type, const bool &connected);
     void deviceAdded(const QString &stationId, const QString &name);
 
     void knownNetworkRemoved(const QString &id, const QString &name);

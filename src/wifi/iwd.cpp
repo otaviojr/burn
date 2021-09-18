@@ -211,7 +211,7 @@ void Iwd::onManagedObjectAdded(const QDBusObjectPath &objectPath, const ManagedO
         if (interfaceName == iwd::KnownNetwork::staticInterfaceName()) {
             iwd::KnownNetwork *network = addObject<iwd::KnownNetwork>(objectPath, m_knownNetworks, props);
 //            connect(network, &iwd::KnownNetwork::propertiesChanged, this, &Iwd::onPropertiesChanged);
-            emit knownNetworkAdded(objectPath.path(), network->name());
+            emit knownNetworkAdded(objectPath.path(), network->name(), network->type());
             //watchProperties(network);
             continue;
         }
@@ -220,7 +220,7 @@ void Iwd::onManagedObjectAdded(const QDBusObjectPath &objectPath, const ManagedO
             iwd::Network *network = addObject<iwd::Network>(objectPath, m_networks, props);
             //watchProperties(network);
 //            connect(network, &iwd::Network::propertiesChanged, this, &Iwd::onPropertiesChanged);
-            emit visibleNetworkAdded(network->path(), network->name());
+            emit visibleNetworkAdded(network->path(), network->name(), network->type(), network->connected());
             continue;
         }
 

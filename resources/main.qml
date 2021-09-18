@@ -53,10 +53,6 @@ ApplicationWindow {
         });
     }
 
-    WifiModel {
-        id: wifiModel
-    }
-
     Item {
         id: frameView
         anchors.fill: parent
@@ -141,6 +137,14 @@ ApplicationWindow {
                     height: 30
 
                     source: "images/v1/wifi.svg"
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            wifiModel.startScan();
+                            wifiList.open();
+                        }
+                    }
                 }
             }
         }
@@ -258,6 +262,32 @@ ApplicationWindow {
                     configDialog.open()
                 }
             }
+        }
+    }
+
+    Drawer {
+        id: wifiList
+        edge: Qt.RightEdge
+
+        WifiModel {
+            id: wifiModel
+        }
+
+        ListView {
+            anchors.fill: parent
+
+            clip: true
+
+            Component {
+                id: networkNode
+
+                Text {
+                    text: name
+                }
+            }
+
+            model: wifiModel
+            delegate: networkNode
         }
     }
 

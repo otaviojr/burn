@@ -5,7 +5,6 @@
 
 WifiModel::WifiModel(QObject *parent) : QAbstractListModel(parent)
 {
-
     qRegisterMetaType<ManagedObject>("ManagedObject");
     qDBusRegisterMetaType<ManagedObject>();
 
@@ -29,21 +28,28 @@ WifiModel::WifiModel(QObject *parent) : QAbstractListModel(parent)
     connect(&m_iwd, &Iwd::stationScanningChanged, this, &WifiModel::onScanningChanged);
 
     m_iwd.init();
-    m_iwd.scan();
+
+    m_isScanning = false;
 }
 
 WifiModel::~WifiModel()
 {
+}
 
+bool WifiModel::isScanning() const
+{
+    return m_isScanning;
+}
+
+void WifiModel::startScan()
+{
+    m_iwd.scan();
 }
 
 void WifiModel::onScanningChanged(const QString &station, bool isScanning)
 {
-    if(isScanning){
-        qDebug() << "Starting wifi network scan";
-    } else {
-        qDebug() << "Stopping wifi network scan";
-    }
+    m_isScanning = isScanning;
+    isScanningChanged(m_isScanning);
 }
 
 void WifiModel::onStationSignalChanged(const QString &stationId, int newLevel)
@@ -60,16 +66,31 @@ void WifiModel::onStationSignalChanged(const QString &stationId, int newLevel)
     }
     strength *= -100;
     qDebug() << "New level for" << m_iwd.networkName(stationId) << " with " << strength << " dbs";
+
+    if(m_networks.contains(stationId)){
+        WifiNetwork network = m_networks.value(stationId);
+        network.setStrength(strength);
+        dataChanged(createIndex(0, 0), createIndex(rowCount()-1, 0), roleVectors());
+    }
 }
 
 void WifiModel::onVisibleNetworkRemoved(const QString &stationId, const QString &name)
 {
     qDebug() << "Visible network removed" << stationId << "-" << name;
+    if(m_networks.contains(stationId)){
+        m_networks.remove(stationId);
+        dataChanged(createIndex(0, 0), createIndex(rowCount()-1, 0), roleVectors());
+    }
 }
 
-void WifiModel::onVisibleNetworkAdded(const QString &stationId, const QString &name)
+void WifiModel::onVisibleNetworkAdded(const QString &stationId, const QString &name,
+                                        const QString &type, const bool &connected)
 {
     qDebug() << "Visible network added" << stationId << "=" << name;
+    WifiNetwork network = WifiNetwork(stationId, name, type);
+    network.setConnected(connected);
+    m_networks.insert(stationId, network);
+    dataChanged(createIndex(0, 0), createIndex(rowCount()-1, 0), roleVectors());
 }
 
 void WifiModel::onDeviceAdded(const QString &stationId, const QString &name)
@@ -84,17 +105,42 @@ void WifiModel::onDeviceRemoved(const QString &stationId)
 
 void WifiModel::onKnownNetworkRemoved(const QString &networkId, const QString &name)
 {
+    qDebug() << "Known network removed" << networkId << "=" << name;
+    if(m_networks.contains(networkId)){
+        m_networks.remove(networkId);
+        dataChanged(createIndex(0, 0), createIndex(rowCount()-1, 0), roleVectors());
+    }
 }
 
-void WifiModel::onKnownNetworkAdded(const QString &networkId, const QString &name)
+void WifiModel::onKnownNetworkAdded(const QString &networkId, const QString &name,
+                                        const QString &type)
 {
+    qDebug() << "Known network added" << networkId << "=" << name;
+    WifiNetwork network = WifiNetwork(networkId, name, type);
+    network.setKnown(true);
+    m_networks.insert(networkId, network);
+    dataChanged(createIndex(0, 0), createIndex(rowCount()-1, 0), roleVectors());
 }
 
 int WifiModel::rowCount(const QModelIndex & parent) const
 {
-    return 0;
+    return m_networks.count();
 }
 QVariant WifiModel::data(const QModelIndex & index, int role) const
 {
-    return QVariant("Teste");
+    WifiNetwork network = m_networks.values().value(index.row());
+
+    switch (role) {
+        case NameRole:
+            return QVariant(network.name());
+        case TypeRole:
+            return QVariant(network.type());
+        case KnownRole:
+            return QVariant(network.known());
+        case ConnectedRole:
+            return QVariant(network.connected());
+        case StrengthRole:
+            return QVariant(network.strength());
+    }
+    return QVariant("");
 }

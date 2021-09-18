@@ -41,6 +41,7 @@ qt_add_executable(burn
     src/gerber_renderer.cpp
     src/gerber_renderer_mirror.cpp
     src/wifi_model.cpp
+    src/wifi_network.cpp
     src/wifi/iwd.cpp
     src/wifi/custom_types.h
     ${interface_srcs}
