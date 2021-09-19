@@ -140,6 +140,7 @@ ApplicationWindow {
 
                     MouseArea {
                         anchors.fill: parent
+                        enabled: true
                         onClicked: {
                             wifiModel.startScan();
                             wifiList.open();
@@ -269,20 +270,133 @@ ApplicationWindow {
         id: wifiList
         edge: Qt.RightEdge
 
-        WifiModel {
-            id: wifiModel
-        }
+        width: 300
+        height: parent.height
 
         ListView {
-            anchors.fill: parent
+            anchors {
+                top: parent.top
+                left: parent.left
+            }
+            width: parent.width; height: parent.height
 
-            clip: true
+            WifiModel {
+                id: wifiModel
+            }
 
             Component {
                 id: networkNode
 
-                Text {
-                    text: name
+                Item{
+                    height: 75;
+                    width: 300;
+
+                    Rectangle {
+                        anchors{
+                            fill: parent
+                            leftMargin: 5
+                            rightMargin: 5
+                            topMargin: 2.5
+                            bottomMargin: 2.5
+                        }
+                        color: connected ? "#00FF00" : "#C0C0C0"
+
+                        border {
+                            width: 1
+                            color: "black"
+                        }
+
+                        Image {
+                            id: wifiImg
+                            anchors {
+                                left: parent.left
+                                top: parent.top
+                                topMargin: 16
+                                leftMargin: 8
+                            }
+
+                            width: 30
+                            height: 30
+
+                            source: (strength != 0 ?
+                                        (strength < 50 ? "images/v1/wifi-low.svg" :
+                                            (strength < 80 ? "images/v1/wifi-medium.svg" : "images/v1/wifi.svg"))
+                                    : "images/v1/wifi-no-signal.svg")
+                        }
+
+                        Text {
+                            id: networkNameTxt
+                            anchors {
+                                left: wifiImg.right
+                                top: parent.top
+                                right: parent.right
+                                topMargin: 3
+                                leftMargin: 8
+                            }
+
+                            font{
+                                pointSize: 18
+                                family: webFont.name
+                            }
+
+                            elide: Text.ElideMiddle
+
+                            verticalAlignment: Text.AlignVCenter
+                            text: name
+                            height: 30
+                            color: "black"
+                        }
+
+                        Text {
+                            anchors {
+                                left: parent.left
+                                top: networkNameTxt.bottom
+                                right: parent.right
+                                leftMargin: 46
+                                topMargin: 0
+                            }
+                            font{
+                                pointSize: 14
+                                family: webFont.name
+                            }
+                            verticalAlignment: Text.AlignVCenter
+                            height: 30
+                            text: strength.toFixed(0) + " dbs"
+                            color: "black"
+                        }
+
+                        Image {
+                            id: wifiProtectedImg
+                            anchors {
+                                right: parent.right
+                                bottom: parent.bottom
+                                bottomMargin: 5
+                                rightMargin: 5
+                            }
+
+                            width: 10
+                            height: 15
+
+                            source: type == "psk" ?  "images/v1/lock.svg" : "images/v1/lock-open.svg"
+                        }
+
+                        Image {
+                            id: wifiKnownImg
+                            anchors {
+                                right: wifiProtectedImg.left
+                                bottom: parent.bottom
+                                bottomMargin: 5
+                                rightMargin: 5
+                            }
+
+                            width: 15
+                            height: 15
+
+                            visible: known
+
+                            source: "images/v1/star.svg"
+                        }
+                    }
                 }
             }
 

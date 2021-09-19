@@ -11,7 +11,7 @@ class WifiModel : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(bool isScanning READ isScanning NOTIFY isScanningChanged)
-
+    Q_ENUMS(WifiModelRoles)
 public:
     enum WifiModelRoles {
         NameRole = Qt::UserRole + 1,
@@ -21,15 +21,10 @@ public:
         StrengthRole
     };
 
-    WifiModel(QObject *parent = 0);
-    ~WifiModel();
-
-    int rowCount(const QModelIndex & parent = QModelIndex()) const;
-    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
+    WifiModel(QObject *parent = Q_NULLPTR);
 
     bool isScanning() const;
 
-protected:
     QHash<int, QByteArray> roleNames() const {
         QHash<int, QByteArray> roles;
         roles[NameRole] = "name";
@@ -40,19 +35,10 @@ protected:
         return roles;
     }
 
-    QList<int> roleVectors() const {
-        QList<int> roles;
-        roles << NameRole;
-        roles << TypeRole;
-        roles << KnownRole;
-        roles << ConnectedRole;
-        roles << StrengthRole;
-
-        return roles;
-    }
-
 public:
     Q_INVOKABLE void startScan();
+    Q_INVOKABLE int rowCount(const QModelIndex & parent = QModelIndex()) const;
+    Q_INVOKABLE QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
 
 private slots:
     void onKnownNetworkRemoved(const QString &networkId, const QString &name);
@@ -66,6 +52,10 @@ private slots:
 
 signals:
     void isScanningChanged(const bool value);
+
+private:
+    QString parseNetworkId(const QString &networkId);
+    void addOrReplaceNetwork(const WifiNetwork &network);
 
 private:
     bool m_isScanning;
