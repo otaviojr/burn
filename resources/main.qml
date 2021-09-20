@@ -282,6 +282,18 @@ ApplicationWindow {
 
             WifiModel {
                 id: wifiModel
+
+                onRequestPassword: {
+
+                }
+
+                onRequestUsernamePassword: {
+
+                }
+
+                onRequestPasswordForUsername: {
+
+                }
             }
 
             Component {
@@ -396,6 +408,14 @@ ApplicationWindow {
 
                             source: "images/v1/star.svg"
                         }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            enabled: true
+                            onClicked: {
+                                wifiPasswordDialog.open();
+                            }
+                        }
                     }
                 }
             }
@@ -410,6 +430,17 @@ ApplicationWindow {
         y: Qt.inputMethod.visible ? parent.height - inputPanel.height : parent.height
         anchors.left: parent.left
         anchors.right: parent.right
+    }
+
+    WifiPasswordDialog {
+        id: wifiPasswordDialog
+        onAccepted: {
+            wifiModel.setWifiPassword(wifiPasswordDialog.wifiPassword);
+            wifiPasswordDialog.wifiPassword = "";
+        }
+        onRejected: {
+
+        }
     }
 
     StartDialog {

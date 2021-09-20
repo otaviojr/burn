@@ -62,5 +62,10 @@ int main(int argc, char *argv[])
     if (engine.rootObjects().isEmpty())
         return -1;
 
+    //QQmlComponent component(&engine, QUrl::fromLocalFile("MyItem.qml"));
+    //QObject *object = component.create();
+    //...
+    //delete object;
+
     return app.exec();
 }

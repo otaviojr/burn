@@ -41,6 +41,7 @@ qt_add_executable(burn
     src/gerber_renderer.cpp
     src/gerber_renderer_mirror.cpp
     src/wifi_model.cpp
+    src/wifi_auth.cpp
     src/wifi_network.cpp
     src/wifi/iwd.cpp
     src/wifi/custom_types.h
@@ -85,6 +86,7 @@ set(burn_resource_files
     "resources/pages/ConfigDialog.qml"
     "resources/pages/GerberConfigDialog.qml"
     "resources/pages/ExecutingDialog.qml"
+    "resources/pages/WifiPasswordDialog.qml"
     "resources/images/v1/folder.png"
     "resources/images/v1/file.png"
     "resources/images/v1/wifi.svg"

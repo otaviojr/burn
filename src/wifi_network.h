@@ -21,6 +21,14 @@ public:
     void setStrength(const float& strength);
     void setConnected(const bool& connected);
 
+    bool operator<(const WifiNetwork& n) const {
+      return this->connected() || this->strength() < n.strength();
+    }
+
+    bool operator>(const WifiNetwork& n) const {
+      return n.connected() || this->strength() > n.strength();
+    }
+
 private:
     QString m_networkId;
     QString m_type;
