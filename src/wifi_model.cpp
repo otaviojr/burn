@@ -3,7 +3,7 @@
 #include "wifi_model.h"
 #include "wifi/custom_types.h"
 
-WifiModel::WifiModel(QObject *parent) : QAbstractListModel(parent), m_auth(&m_iwd)
+WifiModel::WifiModel(QObject *parent) : QAbstractListModel(parent)
 {
     qRegisterMetaType<ManagedObject>("ManagedObject");
     qDBusRegisterMetaType<ManagedObject>();
@@ -27,18 +27,25 @@ WifiModel::WifiModel(QObject *parent) : QAbstractListModel(parent), m_auth(&m_iw
     connect(&m_iwd, &Iwd::signalLevelChanged, this, &WifiModel::onStationSignalChanged);
     connect(&m_iwd, &Iwd::stationScanningChanged, this, &WifiModel::onScanningChanged);
 
-    m_iwd.init();
-
-    if (QDBusConnection::systemBus().registerObject(m_auth.objectPath().path(), this)) {
-        m_iwd.setAuthAgent(m_auth.objectPath());
+    m_auth = new WifiAuth(&m_iwd);
+    if (QDBusConnection::systemBus().registerObject(m_auth->objectPath().path(), this)) {
+        m_iwd.setAuthAgent(m_auth->objectPath());
     } else {
         qWarning() << "Failed to register auth agent";
     }
 
-    connect(&m_auth, &WifiAuth::onRequestPrivateKeyPassphraseEvent, this,
+    connect(m_auth, &WifiAuth::onRequestPrivateKeyPassphraseEvent, this,
                 &WifiModel::onRequestPrivateKeyPassphrase, Qt::BlockingQueuedConnection);
 
+    connect(m_auth, &WifiAuth::onRequestPassphrase, this,
+                &WifiModel::onRequestPassphrase, Qt::BlockingQueuedConnection);
+
+    m_iwd.init();
     m_isScanning = false;
+}
+
+WifiModel::~WifiModel(){
+    delete m_auth;
 }
 
 bool WifiModel::isScanning() const
@@ -50,6 +57,16 @@ void WifiModel::startScan()
 {
     m_iwd.scan();
     emit layoutChanged();
+}
+
+void WifiModel::connectNetwork(const QString& networkId)
+{
+    m_iwd.connectNetwork(networkId);
+}
+
+void WifiModel::disconnectNetwork(const QString& networkId)
+{
+    m_iwd.disconnectStation(networkId);
 }
 
 QString WifiModel::parseNetworkId(const QString &networkId)
@@ -171,13 +188,16 @@ QVariant WifiModel::data(const QModelIndex & index, int role) const
     if (index.row() < 0 || index.row() >= m_networks.count())
         return QVariant();
 
-    QList<WifiNetwork> list = m_networks.values();
-    //std::sort(list.begin(), list.end(), [](const WifiNetwork &n1, const WifiNetwork &n2){
-    //    return ((n1 > n2) || n1.connected());
-    //});
-    WifiNetwork network = list[index.row()];
+    /*QList<WifiNetwork> list = m_networks.values();
+    std::sort(list.begin(), list.end(), [](const WifiNetwork &n1, const WifiNetwork &n2){
+        return n1 > n2;
+    });
+    WifiNetwork network = list[index.row()];*/
+    WifiNetwork network = m_networks.values().value(index.row());
 
     switch (role) {
+        case IdRole:
+            return QVariant(network.networkId());
         case NameRole:
             return QVariant(network.name());
         case TypeRole:
@@ -207,6 +227,7 @@ void WifiModel::setWifiUsernamePassword(const QString &username, const QString &
 
 QString WifiModel::onRequestPrivateKeyPassphrase(const QString &networkId)
 {
+    qDebug() << networkId << " requesting onRequestPrivateKeyPassphrase";
     emit requestPassword();
 
     QEventLoop loop;
@@ -217,6 +238,7 @@ QString WifiModel::onRequestPrivateKeyPassphrase(const QString &networkId)
 }
 QString WifiModel::onRequestPassphrase(const QString &networkId)
 {
+    qDebug() << networkId << " requesting onRequestPassphrase";
     emit requestPassword();
 
     QEventLoop loop;
@@ -227,6 +249,7 @@ QString WifiModel::onRequestPassphrase(const QString &networkId)
 }
 QPair<QString, QString> WifiModel::onRequestUsernameAndPassword(const QString &networkId)
 {
+    qDebug() << networkId << " requesting onRequestUsernameAndPassword";
     emit requestUsernamePassword();
 
     QEventLoop loop;

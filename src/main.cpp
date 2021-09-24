@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     if (options.cli) {
       engine.load(QUrl("qrc:/resources/main_cli.qml"));
     } else {
-      engine.load(QUrl("qrc:/resources/BurnButton.qml"));
+      /*engine.load(QUrl("qrc:/resources/BurnButton.qml"));
       engine.load(QUrl("qrc:/resources/DoubleSpinBox.qml"));
       engine.load(QUrl("qrc:/resources/pages/StartDialog.qml"));
       engine.load(QUrl("qrc:/resources/pages/FileSelection.qml"));
@@ -57,6 +57,8 @@ int main(int argc, char *argv[])
       engine.load(QUrl("qrc:/resources/pages/ConfigDialog.qml"));
       engine.load(QUrl("qrc:/resources/pages/GerberConfigDialog.qml"));
       engine.load(QUrl("qrc:/resources/pages/ExecutingDialog.qml"));
+      engine.load(QUrl("qrc:/resources/pages/WifiPasswordDialog.qml"));
+      engine.load(QUrl("qrc:/resources/pages/WifiOptionsDialog.qml"));*/
       engine.load(QUrl("qrc:/resources/main.qml"));
     }
     if (engine.rootObjects().isEmpty())

@@ -17,7 +17,8 @@ class WifiModel : public QAbstractListModel
     Q_ENUMS(WifiModelRoles)
 public:
     enum WifiModelRoles {
-        NameRole = Qt::UserRole + 1,
+        IdRole = Qt::UserRole + 1,
+        NameRole,
         TypeRole,
         KnownRole,
         ConnectedRole,
@@ -34,11 +35,13 @@ public:
     };
 
     WifiModel(QObject *parent = Q_NULLPTR);
+    ~WifiModel();
 
     bool isScanning() const;
 
     QHash<int, QByteArray> roleNames() const {
         QHash<int, QByteArray> roles;
+        roles[IdRole] = "id";
         roles[NameRole] = "name";
         roles[TypeRole] = "type";
         roles[KnownRole] = "known";
@@ -49,10 +52,14 @@ public:
 
 public:
     Q_INVOKABLE void startScan();
-    Q_INVOKABLE int rowCount(const QModelIndex & parent = QModelIndex()) const;
-    Q_INVOKABLE QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
+    Q_INVOKABLE void connectNetwork(const QString &networkId);
+    Q_INVOKABLE void disconnectNetwork(const QString &networkId);
     Q_INVOKABLE void setWifiPassword(const QString &password);
     Q_INVOKABLE void setWifiUsernamePassword(const QString &username, const QString &password);
+
+    Q_INVOKABLE int rowCount(const QModelIndex & parent = QModelIndex()) const;
+    Q_INVOKABLE QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
+
 
 private slots:
     void onKnownNetworkRemoved(const QString &networkId, const QString &name);
@@ -85,7 +92,7 @@ private:
     QQmlComponent *m_delegateLogin;
     Iwd m_iwd;
     QMap<QString, WifiNetwork> m_networks;
-    WifiAuth m_auth;
+    WifiAuth *m_auth;
     QString m_password;
     QString m_username;
 };

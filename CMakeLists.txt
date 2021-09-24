@@ -87,6 +87,7 @@ set(burn_resource_files
     "resources/pages/GerberConfigDialog.qml"
     "resources/pages/ExecutingDialog.qml"
     "resources/pages/WifiPasswordDialog.qml"
+    "resources/pages/WifiOptionsDialog.qml"
     "resources/images/v1/folder.png"
     "resources/images/v1/file.png"
     "resources/images/v1/wifi.svg"

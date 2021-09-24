@@ -284,7 +284,7 @@ ApplicationWindow {
                 id: wifiModel
 
                 onRequestPassword: {
-
+                    wifiPasswordDialog.open()
                 }
 
                 onRequestUsernamePassword: {
@@ -413,7 +413,11 @@ ApplicationWindow {
                             anchors.fill: parent
                             enabled: true
                             onClicked: {
-                                wifiPasswordDialog.open();
+                                wifiOptionsDialog.networkId = id
+                                wifiOptionsDialog.networkName = name
+                                wifiOptionsDialog.connected = connected
+                                wifiOptionsDialog.known = known
+                                wifiOptionsDialog.open();
                             }
                         }
                     }
@@ -432,6 +436,25 @@ ApplicationWindow {
         anchors.right: parent.right
     }
 
+    WifiOptionsDialog {
+        id: wifiOptionsDialog
+        known: true
+        connected: false
+
+        onRejected: {
+        }
+
+        onConnectNetwork: {
+            wifiList.close();
+            wifiModel.connectNetwork(networkId);
+        }
+
+        onDisconnectNetwork: {
+            wifiList.close();
+            wifiModel.disconnectNetwork(networkId);
+        }
+    }
+
     WifiPasswordDialog {
         id: wifiPasswordDialog
         onAccepted: {
@@ -439,7 +462,6 @@ ApplicationWindow {
             wifiPasswordDialog.wifiPassword = "";
         }
         onRejected: {
-
         }
     }
 

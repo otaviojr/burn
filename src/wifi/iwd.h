@@ -56,6 +56,7 @@ public:
 public slots:
     void connectNetwork(const QString &networkId);
     void disconnectStation(const QString &stationId);
+    void forgetNetwork(const QString &networkId);
     void scan();
 
 signals:

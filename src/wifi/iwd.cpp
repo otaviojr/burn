@@ -55,6 +55,23 @@ void Iwd::connectNetwork(const QString &networkId)
     connect(watcher, &QDBusPendingCallWatcher::finished, this, &Iwd::onPendingCallComplete);
 }
 
+void Iwd::forgetNetwork(const QString &networkId)
+{
+    if (networkId.isEmpty()) {
+        qWarning() << "Can't connect to empty network id";
+        return;
+    }
+
+    QDBusObjectPath dbusPath(networkId);
+    if (!m_knownNetworks.contains(dbusPath)) {
+        qWarning() << "Unknown network id" << networkId;
+        return;
+    }
+    qDebug() << "Forgeting" << networkId << m_knownNetworks[dbusPath]->name();
+
+    m_knownNetworks[dbusPath]->Forget();
+}
+
 void Iwd::disconnectStation(const QString &stationId)
 {
     QDBusObjectPath dbusPath(stationId);
