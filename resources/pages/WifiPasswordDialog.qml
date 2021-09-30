@@ -15,7 +15,24 @@ Dialog {
     contentHeight: wifiPasswordContent.height
     standardButtons: DialogButtonBox.Ok | DialogButtonBox.Cancel
 
-    property alias wifiPassword: wifiPasswordText.text
+    property variant networkId
+    property variant networkName
+    property variant connected
+    property variant known
+    property variant type
+
+    property alias password : wifiPasswordText.text
+
+
+    signal connectNetwork
+
+    onAccepted: {
+        wifiPasswordDialog.connectNetwork()
+    }
+
+    onRejected: {
+        wifiPasswordDialog.close();
+    }
 
     RowLayout {
         id: wifiPasswordContent
@@ -38,7 +55,7 @@ Dialog {
                     font {
                         pointSize: 16
                     }
-                    text: "Entre com a senha para a rede " + "em breve"
+                    text: "Entre com a senha para a rede " + networkName
                 }
 
                 TextField {

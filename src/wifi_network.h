@@ -1,20 +1,27 @@
 #ifndef __WIFI_NETWORK_H__
 #define __WIFI_NETWORK_H__
 
-class WifiNetwork
+#include <QObject>
+
+class WifiNetwork : public QObject
 {
+    Q_OBJECT
 public:
-    WifiNetwork(const QString &networkId, const QString &name, const QString &type);
+    WifiNetwork(const QString &id, const QString &name, const QString &type);
     WifiNetwork();
 
+    QString id() const;
     QString networkId() const;
+    QString stationId() const;
     QString name() const;
     QString type() const;
     bool known() const;
     float strength() const;
     bool connected() const;
 
+    void setId(const QString& id);
     void setNetworkId(const QString& networkId);
+    void setStationId(const QString& stationId);
     void setName(const QString& name);
     void setType(const QString& type);
     void setKnown(const bool &known);
@@ -30,7 +37,9 @@ public:
     }
 
 private:
+    QString m_id;
     QString m_networkId;
+    QString m_stationId;
     QString m_type;
     QString m_name;
     bool m_known;

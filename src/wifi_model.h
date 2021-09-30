@@ -18,6 +18,8 @@ class WifiModel : public QAbstractListModel
 public:
     enum WifiModelRoles {
         IdRole = Qt::UserRole + 1,
+        NetworkIdRole,
+        StationIdRole,
         NameRole,
         TypeRole,
         KnownRole,
@@ -26,12 +28,14 @@ public:
     };
 
     enum WifiModelChanged {
-        NameChanged      = 0b00000001,
-        TypeChanged      = 0b00000010,
-        KnownChanged     = 0b00000100,
-        ConnectedChanged = 0b00001000,
-        StrengthChanged  = 0b00010000,
-        AllChanged       = 0b10000000
+        NetworkIdChanged      = 0b00000001,
+        StationIdChanged      = 0b00000010,
+        NameChanged           = 0b00000100,
+        TypeChanged           = 0b00001000,
+        KnownChanged          = 0b00010000,
+        ConnectedChanged      = 0b00100000,
+        StrengthChanged       = 0b01000000,
+        AllChanged            = 0b10000000
     };
 
     WifiModel(QObject *parent = Q_NULLPTR);
@@ -42,6 +46,8 @@ public:
     QHash<int, QByteArray> roleNames() const {
         QHash<int, QByteArray> roles;
         roles[IdRole] = "id";
+        roles[NetworkIdRole] = "networkId";
+        roles[StationIdRole] = "stationId";
         roles[NameRole] = "name";
         roles[TypeRole] = "type";
         roles[KnownRole] = "known";
@@ -52,8 +58,11 @@ public:
 
 public:
     Q_INVOKABLE void startScan();
-    Q_INVOKABLE void connectNetwork(const QString &networkId);
-    Q_INVOKABLE void disconnectNetwork(const QString &networkId);
+    Q_INVOKABLE void connectNetwork(const QString &id);
+    Q_INVOKABLE void connectNetworkWithPassphrase(const QString& id, const QString& passphrase);
+    Q_INVOKABLE void connectNetwork(const QString &id, const QString &username, const QString &password);
+    Q_INVOKABLE void disconnectNetwork(const QString &id);
+    Q_INVOKABLE void forgetNetwork(const QString &id);
     Q_INVOKABLE void setWifiPassword(const QString &password);
     Q_INVOKABLE void setWifiUsernamePassword(const QString &username, const QString &password);
 
@@ -69,32 +78,25 @@ private slots:
     void onVisibleNetworkRemoved(const QString &stationId, const QString &name);
     void onVisibleNetworkAdded(const QString &stationId, const QString &name, const QString &type, const bool &connected);
     void onStationSignalChanged(const QString &stationId, int newLevel);
-    void onScanningChanged(const QString &station, bool isScanning);
-
-    QString onRequestPrivateKeyPassphrase(const QString &networkId);
-    QString onRequestPassphrase(const QString &networkId);
-    QPair<QString, QString> onRequestUsernameAndPassword(const QString &networkId);
-    QString onRequestUserPassword(const QString &username, const QString &networkId);
+    void onScanningChanged(const QString &stationId, bool isScanning);
+    void onNetworkConnectedChanged(const QString &networkId, bool isConnected);
 
 signals:
     void isScanningChanged(const bool value);
-    void requestPassword();
-    void requestUsernamePassword();
-    void requestPasswordForUsername(const QString &username);
-    void wifiPassword();
 
 private:
     QString parseNetworkId(const QString &networkId);
-    void addOrReplaceNetwork(const WifiNetwork &network, const enum WifiModelChanged &changed);
+    QString parseStationId(const QString &stationId);
+    void addOrReplaceNetwork(QPointer<WifiNetwork> network, const unsigned int &changed);
 
 private:
     bool m_isScanning;
-    QQmlComponent *m_delegateLogin;
     Iwd m_iwd;
-    QMap<QString, WifiNetwork> m_networks;
-    WifiAuth *m_auth;
-    QString m_password;
-    QString m_username;
+    QPointer<WifiNetwork> connectedNetwork;
+    QMap<QString, QPointer<WifiNetwork>> m_networks;
+    QPointer<SignalLevelAgent> m_signal;
+    QPointer<WifiAuth> m_auth;
+    //QMutex mutex;
 };
 
 #endif

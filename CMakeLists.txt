@@ -36,6 +36,12 @@ qt6_add_dbus_interface(interface_srcs
     DbusInterface
 )
 
+qt_wrap_cpp(moc_srcs
+    src/wifi_auth.h
+    src/wifi/iwd.h
+    src/wifi_model.h
+)
+
 qt_add_executable(burn
     src/main.cpp
     src/gerber_renderer.cpp
@@ -46,6 +52,7 @@ qt_add_executable(burn
     src/wifi/iwd.cpp
     src/wifi/custom_types.h
     ${interface_srcs}
+    ${moc_srcs}
 )
 
 set_target_properties(burn PROPERTIES

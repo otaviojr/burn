@@ -70,6 +70,7 @@ signals:
 
     void signalLevelChanged(const QString &station, int level);
     void stationScanningChanged(const QString &station, bool scanning);
+    void networkConnectedChanged(const QString &network, bool connected);
 
 private slots:
     void onManagedObjectsReceived(QDBusPendingCallWatcher *watcher);
@@ -182,6 +183,7 @@ public slots:
      * already been unregistered.
      */
     Q_NOREPLY void Release(const QDBusObjectPath &object) {
+        qDebug() << "Release" << object.path();
         emit released(object.path());
     }
 
@@ -191,8 +193,9 @@ public slots:
      *
      * Possible Errors: net.connman.iwd.Agent.Error.Canceled
      */
-    QDBusVariant RequestPassphrase(const QDBusObjectPath &network) {
-        return QDBusVariant(onRequestPassphrase(network.path()));
+    QString RequestPassphrase(const QDBusObjectPath &network) {
+        qDebug() << "RequestPassphrase" << network.path();
+        return onRequestPassphrase(network.path());
     }
 
     /**
@@ -205,8 +208,9 @@ public slots:
      *
      * @return a string
      */
-    QDBusVariant RequestPrivateKeyPassphrase(const QDBusObjectPath &network) {
-        return QDBusVariant(onRequestPrivateKeyPassphrase(network.path()));
+    QString RequestPrivateKeyPassphrase(const QDBusObjectPath &network) {
+        qDebug() << "RequestPrivateKeyPassphrase" << network.path();
+        return onRequestPrivateKeyPassphrase(network.path());
     }
 
     /**
@@ -218,9 +222,10 @@ public slots:
      *
      * @return two strings
      */
-    QDBusVariant RequestUserNameAndPassword(const QDBusObjectPath &network) {
+    QStringList RequestUserNameAndPassword(const QDBusObjectPath &network) {
+        qDebug() << "RequestUserNameAndPassword" << network.path();
         const QPair<QString, QString> usernameAndPassword = onRequestUsernameAndPassword(network.path());
-        return QDBusVariant(QStringList({usernameAndPassword.first, usernameAndPassword.second}));
+        return QStringList({usernameAndPassword.first, usernameAndPassword.second});
     }
 
     /**
@@ -229,8 +234,9 @@ public slots:
      * user password.  The user name is optionally passed
      * in the parameter.
      */
-    QDBusVariant RequestUserPassword(const QDBusObjectPath &network, const QString &username) {
-        return QDBusVariant(onRequestUserPassword(username, network.path()));
+    QString RequestUserPassword(const QDBusObjectPath &network, const QString &username) {
+        qDebug() << "RequestUserPassword" << network.path();
+        return onRequestUserPassword(username, network.path());
     }
 
     /**
@@ -241,6 +247,7 @@ public slots:
      * "timed-out" or "shutdown".
      */
     Q_NOREPLY void Cancel(const QString &reason) {
+        qDebug() << "Authentication cancelled" << reason;
         emit authenticationCancelled(reason);
     }
 

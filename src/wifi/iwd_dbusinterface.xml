@@ -116,6 +116,29 @@
             <arg name="signal" type="y" direction="in"/>
         </method>
     </interface>
+    <interface name="net.connman.iwd.Agent">
+        <method name="Release">
+        </method>
+        <method name="RequestPassphrase">
+            <arg name="path" type="o" direction="in"/>
+            <arg name="passphrase" type="s" direction="out"/>
+        </method>
+        <method name="RequestPrivateKeyPassphrase">
+            <arg name="path" type="o" direction="in"/>
+            <arg name="passphrase" type="s" direction="out"/>
+        </method>
+        <method name="RequestUserNameAndPassword">
+            <arg name="path" type="o" direction="in"/>
+            <arg name="passphrase" type="s" direction="out"/>
+        </method>
+        <method name="RequestUserPassword">
+            <arg name="path" type="o" direction="in"/>
+            <arg name="passphrase" type="s" direction="out"/>
+        </method>
+        <method name="Cancel">
+            <arg name="reason" type="s" direction="in"/>
+        </method>
+    </interface>
     <interface name="org.freedesktop.DBus.Properties">
         <method name="Get">
             <arg type="s" name="interface_name" direction="in"/>

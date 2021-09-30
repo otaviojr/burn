@@ -10,14 +10,15 @@ class WifiAuth : public AuthAgent
 public:
     explicit WifiAuth(Iwd *iwd);
 
-signals:
-    QString onRequestPrivateKeyPassphraseEvent(const QString &networkId);
-    QString onRequestPassphraseEvent(const QString &networkId);
-    QPair<QString, QString> onRequestUsernameAndPasswordEvent(const QString &networkId);
-    QString onRequestUserPasswordEvent(const QString &username, const QString &networkId);
+private:
+    QString m_password;
+    QString m_username;
+
+public:
+    void setWifiPassword(const QString &username, const QString &password);
 
 // AuthAgent interface
-public:
+protected:
     QString onRequestPrivateKeyPassphrase(const QString &networkId) override;
     QString onRequestPassphrase(const QString &networkId) override;
     QPair<QString, QString> onRequestUsernameAndPassword(const QString &networkId) override;

@@ -1,3 +1,4 @@
+#include <QDBusConnection>
 #include <QDBusMetaType>
 
 #include "wifi_model.h"
@@ -26,25 +27,39 @@ WifiModel::WifiModel(QObject *parent) : QAbstractListModel(parent)
     connect(&m_iwd, &Iwd::deviceRemoved, this, &WifiModel::onDeviceRemoved);
     connect(&m_iwd, &Iwd::signalLevelChanged, this, &WifiModel::onStationSignalChanged);
     connect(&m_iwd, &Iwd::stationScanningChanged, this, &WifiModel::onScanningChanged);
+    connect(&m_iwd, &Iwd::networkConnectedChanged, this, &WifiModel::onNetworkConnectedChanged);
+
+    m_signal = new SignalLevelAgent(&m_iwd);
+    if (QDBusConnection::systemBus().registerObject(m_signal->objectPath().path(), m_signal, QDBusConnection::ExportAllContents)) {
+        m_iwd.setSignalAgent(m_signal->objectPath(), {-20, -40, -49, -50, -51, -60, -80});
+        qDebug() << "set signal agent";
+    } else {
+        qWarning() << "Failed to register signal agent";
+    }
+    connect(m_signal, &SignalLevelAgent::signalLevelChanged, this, &WifiModel::onStationSignalChanged);
 
     m_auth = new WifiAuth(&m_iwd);
-    if (QDBusConnection::systemBus().registerObject(m_auth->objectPath().path(), this)) {
+    if (QDBusConnection::systemBus().registerObject(m_auth->objectPath().path(), m_auth, QDBusConnection::ExportAllContents)) {
         m_iwd.setAuthAgent(m_auth->objectPath());
+        qDebug() << "set auth agent";
     } else {
         qWarning() << "Failed to register auth agent";
     }
-
-    connect(m_auth, &WifiAuth::onRequestPrivateKeyPassphraseEvent, this,
-                &WifiModel::onRequestPrivateKeyPassphrase, Qt::BlockingQueuedConnection);
-
-    connect(m_auth, &WifiAuth::onRequestPassphrase, this,
-                &WifiModel::onRequestPassphrase, Qt::BlockingQueuedConnection);
 
     m_iwd.init();
     m_isScanning = false;
 }
 
 WifiModel::~WifiModel(){
+    QList<QPointer<WifiNetwork>> networks = m_networks.values();
+
+    while(!networks.isEmpty()){
+        delete networks.takeFirst();
+    }
+
+    m_networks.clear();
+
+    delete m_signal;
     delete m_auth;
 }
 
@@ -56,17 +71,58 @@ bool WifiModel::isScanning() const
 void WifiModel::startScan()
 {
     m_iwd.scan();
-    emit layoutChanged();
 }
 
-void WifiModel::connectNetwork(const QString& networkId)
+void WifiModel::connectNetwork(const QString& id)
 {
-    m_iwd.connectNetwork(networkId);
+    this->connectNetwork(id, "", "");
 }
 
-void WifiModel::disconnectNetwork(const QString& networkId)
+void WifiModel::connectNetworkWithPassphrase(const QString& id, const QString& passphrase)
 {
-    m_iwd.disconnectStation(networkId);
+    this->connectNetwork(id, "", passphrase);
+}
+
+void WifiModel::connectNetwork(const QString& id, const QString &username, const QString &password)
+{
+    qDebug() << "Connecting at network" << id;
+    if(this->m_networks.contains(id)){
+        qDebug() << "Network" << id << "found";
+        QPointer<WifiNetwork> network = this->m_networks.value(id);
+        if(network){
+            qDebug() << "Connecting at networkId" << network->stationId();
+            this->m_auth->setWifiPassword(username, password);
+            this->m_iwd.connectNetwork(network->stationId());
+        }
+    }
+}
+
+void WifiModel::disconnectNetwork(const QString& id)
+{
+    qDebug() << "Disconnecting from network" << id;
+    if(m_networks.contains(id)){
+        qDebug() << "Network" << id << "found";
+        QPointer<WifiNetwork> network = m_networks.value(id);
+        if(network){
+            qDebug() << "Disconnecting from stationId" << this->parseStationId(network->stationId());
+            m_iwd.disconnectStation(this->parseStationId(network->stationId()));
+            network->setConnected(false);
+        }
+    }
+}
+
+void WifiModel::forgetNetwork(const QString& id)
+{
+    qDebug() << "Forgetting from network" << id;
+    if(m_networks.contains(id)){
+        qDebug() << "Network" << id << "found";
+        QPointer<WifiNetwork> network = m_networks.value(id);
+        if(network){
+            qDebug() << "Forgetting from stationId" << this->parseStationId(network->stationId());
+            m_iwd.forgetNetwork(this->parseStationId(network->stationId()));
+            network->setKnown(false);
+        }
+    }
 }
 
 QString WifiModel::parseNetworkId(const QString &networkId)
@@ -76,28 +132,54 @@ QString WifiModel::parseNetworkId(const QString &networkId)
     return list[list.count()-1];
 }
 
-void WifiModel::addOrReplaceNetwork(const WifiNetwork &network, const enum WifiModelChanged &changed)
+QString WifiModel::parseStationId(const QString &stationId)
 {
-    if(m_networks.contains(parseNetworkId(network.networkId()))){
-        WifiNetwork e_network = m_networks.take(parseNetworkId(network.networkId()));
-        if(changed & AllChanged || changed & NameChanged)
-            e_network.setName(network.name());
+    QStringList list = stationId.split('/', Qt::SkipEmptyParts, Qt::CaseInsensitive);
+    list.removeLast();
+    qDebug() << "Value " << stationId << " reduced to " << ("/" + list.join('/'));
+    return ("/" + list.join('/'));
+}
 
-        if(changed & AllChanged || changed & TypeChanged)
-            e_network.setType(network.type());
+void WifiModel::addOrReplaceNetwork(QPointer<WifiNetwork> network, const unsigned int &changed)
+{
+    //QMutexLocker locker(&mutex);
+    if(m_networks.contains(network->id())){
+        QPointer<WifiNetwork> e_network = m_networks.value(network->id());
+        if(e_network){
+            if(changed & AllChanged || changed & NetworkIdChanged)
+                e_network->setNetworkId(network->networkId());
 
-        if(changed & AllChanged || changed & KnownChanged)
-            e_network.setKnown(network.known());
+            if(changed & AllChanged || changed & StationIdChanged)
+                e_network->setStationId(network->stationId());
 
-        if(changed & AllChanged || changed & ConnectedChanged)
-            e_network.setConnected(network.connected());
+            if(changed & AllChanged || changed & NameChanged)
+                e_network->setName(network->name());
 
-        if(changed & AllChanged || changed & StrengthChanged)
-            e_network.setStrength(network.strength());
+            if(changed & AllChanged || changed & TypeChanged)
+                e_network->setType(network->type());
 
-        m_networks.insert(parseNetworkId(network.networkId()), e_network);
+            if(changed & AllChanged || changed & KnownChanged)
+                e_network->setKnown(network->known());
+
+            if(changed & AllChanged || changed & ConnectedChanged)
+                e_network->setConnected(network->connected());
+
+            if(changed & AllChanged || changed & StrengthChanged)
+                e_network->setStrength(network->strength());
+
+            if(e_network->connected()){
+                this->connectedNetwork = e_network;
+            }
+
+            delete network;
+        }
     } else {
-        m_networks.insert(parseNetworkId(network.networkId()), network);
+
+        if(network->connected()){
+            this->connectedNetwork = network;
+        }
+
+        m_networks.insert(network->id(), network);
     }
     emit dataChanged(index(0), index(m_networks.count()-1));
 }
@@ -105,11 +187,29 @@ void WifiModel::addOrReplaceNetwork(const WifiNetwork &network, const enum WifiM
 void WifiModel::onScanningChanged(const QString &station, bool isScanning)
 {
     m_isScanning = isScanning;
-    isScanningChanged(m_isScanning);
+    emit layoutChanged();
+    emit isScanningChanged(m_isScanning);
+}
+
+void WifiModel::onNetworkConnectedChanged(const QString &networkId, bool isConnected)
+{
+    if(m_networks.contains(parseNetworkId(networkId))){
+        qDebug() << "NetworkId " << networkId << "is" << (isConnected ? "connected" : "disconnected");
+        QPointer<WifiNetwork> network = m_networks.value(parseNetworkId(networkId));
+        if(network && isConnected){
+            connectedNetwork = network;
+        } else {
+            if(connectedNetwork && connectedNetwork->id() == parseNetworkId(networkId)){
+                connectedNetwork = NULL;
+            }
+        }
+        emit dataChanged(index(0), index(m_networks.count()-1));
+    }
 }
 
 void WifiModel::onStationSignalChanged(const QString &stationId, int newLevel)
 {
+    //QMutexLocker locker(&mutex);
     float strength = newLevel / 100.;
     if (strength == 0) { // special case in QtBluetooth apparently
         strength = 0.f;
@@ -125,18 +225,25 @@ void WifiModel::onStationSignalChanged(const QString &stationId, int newLevel)
 
     if(m_networks.contains(parseNetworkId(stationId))){
         qDebug() << "StationId " << stationId << " found";
-        WifiNetwork network = m_networks.take(parseNetworkId(stationId));
-        network.setStrength(strength);
-        this->addOrReplaceNetwork(network, StrengthChanged);
+        QPointer<WifiNetwork> network = m_networks.value(parseNetworkId(stationId));
+        if(network){
+            network->setStrength(strength);
+            emit dataChanged(index(0), index(m_networks.count()-1));
+        }
     }
 }
 
 void WifiModel::onVisibleNetworkRemoved(const QString &stationId, const QString &name)
 {
+    //QMutexLocker locker(&mutex);
     qDebug() << "Visible network removed" << stationId << "-" << name;
     if(m_networks.contains(parseNetworkId(stationId))){
-        m_networks.remove(parseNetworkId(stationId));
-        emit dataChanged(index(0), index(m_networks.count()-1));
+        QPointer<WifiNetwork> network = m_networks.value(parseNetworkId(stationId));
+        if(network){
+            m_networks.remove(network->id());
+            emit dataChanged(index(0), index(m_networks.count()-1));
+            delete network;
+        }
     }
 }
 
@@ -144,9 +251,10 @@ void WifiModel::onVisibleNetworkAdded(const QString &stationId, const QString &n
                                         const QString &type, const bool &connected)
 {
     qDebug() << "Visible network added" << stationId << "=" << name << "(connected=" << connected << ")";
-    WifiNetwork network = WifiNetwork(stationId, name, type);
-    network.setConnected(connected);
-    this->addOrReplaceNetwork(network, ConnectedChanged);
+    QPointer<WifiNetwork> network = new WifiNetwork(parseNetworkId(stationId), name, type);
+    network->setStationId(stationId);
+    network->setConnected(connected);
+    this->addOrReplaceNetwork(network, ConnectedChanged | StationIdChanged);
 }
 
 void WifiModel::onDeviceAdded(const QString &stationId, const QString &name)
@@ -163,8 +271,12 @@ void WifiModel::onKnownNetworkRemoved(const QString &networkId, const QString &n
 {
     qDebug() << "Known network removed" << networkId << "=" << name;
     if(m_networks.contains(parseNetworkId(networkId))){
-        m_networks.remove(parseNetworkId(networkId));
-        emit dataChanged(index(0), index(m_networks.count()-1));
+        QPointer<WifiNetwork> network = m_networks.value(parseNetworkId(networkId));
+        if(network){
+            m_networks.remove(network->id());
+            emit dataChanged(index(0), index(m_networks.count()-1));
+            delete network;
+        }
     }
 }
 
@@ -172,9 +284,10 @@ void WifiModel::onKnownNetworkAdded(const QString &networkId, const QString &nam
                                         const QString &type)
 {
     qDebug() << "Known network added" << networkId << "=" << name;
-    WifiNetwork network = WifiNetwork(networkId, name, type);
-    network.setKnown(true);
-    this->addOrReplaceNetwork(network, KnownChanged);
+    QPointer<WifiNetwork> network = new WifiNetwork(parseNetworkId(networkId), name, type);
+    network->setNetworkId(networkId);
+    network->setKnown(true);
+    this->addOrReplaceNetwork(network, KnownChanged | NetworkIdChanged);
 }
 
 int WifiModel::rowCount(const QModelIndex & parent) const
@@ -185,86 +298,53 @@ int WifiModel::rowCount(const QModelIndex & parent) const
 
 QVariant WifiModel::data(const QModelIndex & index, int role) const
 {
+    //QMutexLocker locker(&mutex);
+
     if (index.row() < 0 || index.row() >= m_networks.count())
         return QVariant();
 
-    /*QList<WifiNetwork> list = m_networks.values();
-    std::sort(list.begin(), list.end(), [](const WifiNetwork &n1, const WifiNetwork &n2){
-        return n1 > n2;
+    /*QList<QPointer<WifiNetwork>> list = m_networks.values();
+    std::sort(list.begin(), list.end(), [](QPointer<WifiNetwork> n1, QPointer<WifiNetwork> n2){
+        return *n1 > *n2;
     });
-    WifiNetwork network = list[index.row()];*/
-    WifiNetwork network = m_networks.values().value(index.row());
+
+    QPointer<WifiNetwork> network = list[index.row()];
+    if(!network){
+        return QVariant();
+    }*/
+
+    QPointer<WifiNetwork> network = m_networks.values().value(index.row());
+    if(!network){
+        return QVariant();
+    }
 
     switch (role) {
         case IdRole:
-            return QVariant(network.networkId());
+            return QVariant(network->id());
+        case NetworkIdRole:
+            return QVariant(network->networkId());
+        case StationIdRole:
+            return QVariant(network->stationId());
         case NameRole:
-            return QVariant(network.name());
+            return QVariant(network->name());
         case TypeRole:
-            return QVariant(network.type());
+            return QVariant(network->type());
         case KnownRole:
-            return QVariant(network.known());
+            return QVariant(network->known());
         case ConnectedRole:
-            return QVariant(network.connected());
+            return QVariant(this->connectedNetwork && this->connectedNetwork->id() == network->id());
         case StrengthRole:
-            return QVariant(network.strength());
+            return QVariant(network->strength());
     }
     return QVariant();
 }
 
 void WifiModel::setWifiPassword(const QString &password)
 {
-    this->m_password = password;
-    emit wifiPassword();
+    this->m_auth->setWifiPassword("",password);
 }
 
 void WifiModel::setWifiUsernamePassword(const QString &username, const QString &password)
 {
-    this->m_username = username;
-    this->m_password = password;
-    emit wifiPassword();
-}
-
-QString WifiModel::onRequestPrivateKeyPassphrase(const QString &networkId)
-{
-    qDebug() << networkId << " requesting onRequestPrivateKeyPassphrase";
-    emit requestPassword();
-
-    QEventLoop loop;
-    connect(this, SIGNAL(wifiPassword()), &loop, SLOT(quit()));
-    loop.exec();
-
-    return QString(this->m_password);
-}
-QString WifiModel::onRequestPassphrase(const QString &networkId)
-{
-    qDebug() << networkId << " requesting onRequestPassphrase";
-    emit requestPassword();
-
-    QEventLoop loop;
-    connect(this, SIGNAL(wifiPassword()), &loop, SLOT(quit()));
-    loop.exec();
-
-    return QString(this->m_password);
-}
-QPair<QString, QString> WifiModel::onRequestUsernameAndPassword(const QString &networkId)
-{
-    qDebug() << networkId << " requesting onRequestUsernameAndPassword";
-    emit requestUsernamePassword();
-
-    QEventLoop loop;
-    connect(this, SIGNAL(wifiPassword()), &loop, SLOT(quit()));
-    loop.exec();
-
-    return QPair(this->m_username,this->m_password);
-}
-QString WifiModel::onRequestUserPassword(const QString &username, const QString &networkId)
-{
-    emit requestPasswordForUsername(username);
-
-    QEventLoop loop;
-    connect(this, SIGNAL(wifiPassword()), &loop, SLOT(quit()));
-    loop.exec();
-
-    return QString(this->m_password);
+    this->m_auth->setWifiPassword(username,password);
 }

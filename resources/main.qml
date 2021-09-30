@@ -282,18 +282,6 @@ ApplicationWindow {
 
             WifiModel {
                 id: wifiModel
-
-                onRequestPassword: {
-                    wifiPasswordDialog.open()
-                }
-
-                onRequestUsernamePassword: {
-
-                }
-
-                onRequestPasswordForUsername: {
-
-                }
             }
 
             Component {
@@ -389,7 +377,7 @@ ApplicationWindow {
                             width: 10
                             height: 15
 
-                            source: type == "psk" ?  "images/v1/lock.svg" : "images/v1/lock-open.svg"
+                            source: type == "open" ?  "images/v1/lock-open.svg" : "images/v1/lock.svg"
                         }
 
                         Image {
@@ -417,6 +405,7 @@ ApplicationWindow {
                                 wifiOptionsDialog.networkName = name
                                 wifiOptionsDialog.connected = connected
                                 wifiOptionsDialog.known = known
+                                wifiOptionsDialog.type = type
                                 wifiOptionsDialog.open();
                             }
                         }
@@ -445,23 +434,35 @@ ApplicationWindow {
         }
 
         onConnectNetwork: {
-            wifiList.close();
-            wifiModel.connectNetwork(networkId);
+            if(wifiOptionsDialog.type == "psk" && !wifiOptionsDialog.known){
+                wifiPasswordDialog.networkId = wifiOptionsDialog.networkId
+                wifiPasswordDialog.networkName = wifiOptionsDialog.networkName
+                wifiPasswordDialog.connected = wifiOptionsDialog.connected
+                wifiPasswordDialog.known = wifiOptionsDialog.known
+                wifiPasswordDialog.type = wifiOptionsDialog.type
+                wifiPasswordDialog.password = "";
+                wifiPasswordDialog.open()
+            } else {
+                wifiList.close();
+                wifiModel.connectNetwork(networkId);
+            }
         }
 
         onDisconnectNetwork: {
             wifiList.close();
             wifiModel.disconnectNetwork(networkId);
         }
+
+        onForgetNetwork: {
+            wifiList.close();
+            wifiModel.forgetNetwork(networkId);
+        }
     }
 
     WifiPasswordDialog {
         id: wifiPasswordDialog
-        onAccepted: {
-            wifiModel.setWifiPassword(wifiPasswordDialog.wifiPassword);
-            wifiPasswordDialog.wifiPassword = "";
-        }
-        onRejected: {
+        onConnectNetwork: {
+            wifiModel.connectNetworkWithPassphrase(wifiPasswordDialog.networkId, wifiPasswordDialog.password);
         }
     }
 

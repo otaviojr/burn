@@ -18,9 +18,11 @@ Dialog {
     property variant networkName
     property variant connected
     property variant known
+    property variant type
 
     signal rejected
     signal connectNetwork
+    signal forgetNetwork
     signal disconnectNetwork
 
     RowLayout {
@@ -76,6 +78,10 @@ Dialog {
                         topMargin: 10
                     }
                     text: "Esquecer"
+                    onClicked: {
+                        wifiOptionsDialog.close()
+                        wifiOptionsDialog.forgetNetwork()
+                    }
                 }
 
                 Button {
