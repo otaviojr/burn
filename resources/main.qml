@@ -136,7 +136,7 @@ ApplicationWindow {
                     width: 30
                     height: 30
 
-                    source: "images/v1/wifi.svg"
+                    source: wifiModel.isConnected ? "images/v1/wifi.svg" : "images/v1/wifi-no-signal.svg"
 
                     MouseArea {
                         anchors.fill: parent
@@ -461,6 +461,7 @@ ApplicationWindow {
 
     WifiPasswordDialog {
         id: wifiPasswordDialog
+        focus: true
         onConnectNetwork: {
             wifiModel.connectNetworkWithPassphrase(wifiPasswordDialog.networkId, wifiPasswordDialog.password);
         }

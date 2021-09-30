@@ -68,6 +68,11 @@ bool WifiModel::isScanning() const
     return m_isScanning;
 }
 
+bool WifiModel::isConnected() const
+{
+    return (this->m_connectedNetwork != NULL);
+}
+
 void WifiModel::startScan()
 {
     m_iwd.scan();
@@ -106,7 +111,8 @@ void WifiModel::disconnectNetwork(const QString& id)
         if(network){
             qDebug() << "Disconnecting from stationId" << this->parseStationId(network->stationId());
             m_iwd.disconnectStation(this->parseStationId(network->stationId()));
-            network->setConnected(false);
+            this->m_connectedNetwork = NULL;
+            emit isConnectedChanged(false);
         }
     }
 }
@@ -118,11 +124,21 @@ void WifiModel::forgetNetwork(const QString& id)
         qDebug() << "Network" << id << "found";
         QPointer<WifiNetwork> network = m_networks.value(id);
         if(network){
-            qDebug() << "Forgetting from stationId" << this->parseStationId(network->stationId());
-            m_iwd.forgetNetwork(this->parseStationId(network->stationId()));
+            qDebug() << "Forgetting stationId" << network->id();
+            m_iwd.forgetNetwork(network->networkId());
             network->setKnown(false);
+            refreshWifiList();
         }
     }
+}
+
+void WifiModel::refreshWifiList()
+{
+    this->m_orderedNetworks = m_networks.values();
+    std::sort(this->m_orderedNetworks.begin(), this->m_orderedNetworks.end(), [](QPointer<WifiNetwork> n1, QPointer<WifiNetwork> n2){
+        return *n1 > *n2;
+    });
+    emit dataChanged(index(0), index(this->m_orderedNetworks.count()-1));
 }
 
 QString WifiModel::parseNetworkId(const QString &networkId)
@@ -140,8 +156,10 @@ QString WifiModel::parseStationId(const QString &stationId)
     return ("/" + list.join('/'));
 }
 
-void WifiModel::addOrReplaceNetwork(QPointer<WifiNetwork> network, const unsigned int &changed)
+QPointer<WifiNetwork> WifiModel::addOrReplaceNetwork(QPointer<WifiNetwork> network, const unsigned int &changed)
 {
+    QPointer<WifiNetwork> ret_network;
+
     //QMutexLocker locker(&mutex);
     if(m_networks.contains(network->id())){
         QPointer<WifiNetwork> e_network = m_networks.value(network->id());
@@ -161,27 +179,18 @@ void WifiModel::addOrReplaceNetwork(QPointer<WifiNetwork> network, const unsigne
             if(changed & AllChanged || changed & KnownChanged)
                 e_network->setKnown(network->known());
 
-            if(changed & AllChanged || changed & ConnectedChanged)
-                e_network->setConnected(network->connected());
-
             if(changed & AllChanged || changed & StrengthChanged)
                 e_network->setStrength(network->strength());
 
-            if(e_network->connected()){
-                this->connectedNetwork = e_network;
-            }
-
             delete network;
+            ret_network = e_network;
         }
     } else {
-
-        if(network->connected()){
-            this->connectedNetwork = network;
-        }
-
         m_networks.insert(network->id(), network);
+        ret_network = network;
     }
-    emit dataChanged(index(0), index(m_networks.count()-1));
+    refreshWifiList();
+    return ret_network;
 }
 
 void WifiModel::onScanningChanged(const QString &station, bool isScanning)
@@ -197,13 +206,15 @@ void WifiModel::onNetworkConnectedChanged(const QString &networkId, bool isConne
         qDebug() << "NetworkId " << networkId << "is" << (isConnected ? "connected" : "disconnected");
         QPointer<WifiNetwork> network = m_networks.value(parseNetworkId(networkId));
         if(network && isConnected){
-            connectedNetwork = network;
+            m_connectedNetwork = network;
+            emit isConnectedChanged(isConnected);
         } else {
-            if(connectedNetwork && connectedNetwork->id() == parseNetworkId(networkId)){
-                connectedNetwork = NULL;
+            if(m_connectedNetwork && m_connectedNetwork->id() == parseNetworkId(networkId)){
+                m_connectedNetwork = NULL;
+                emit isConnectedChanged(isConnected);
             }
         }
-        emit dataChanged(index(0), index(m_networks.count()-1));
+        refreshWifiList();
     }
 }
 
@@ -228,7 +239,7 @@ void WifiModel::onStationSignalChanged(const QString &stationId, int newLevel)
         QPointer<WifiNetwork> network = m_networks.value(parseNetworkId(stationId));
         if(network){
             network->setStrength(strength);
-            emit dataChanged(index(0), index(m_networks.count()-1));
+            refreshWifiList();
         }
     }
 }
@@ -241,7 +252,7 @@ void WifiModel::onVisibleNetworkRemoved(const QString &stationId, const QString 
         QPointer<WifiNetwork> network = m_networks.value(parseNetworkId(stationId));
         if(network){
             m_networks.remove(network->id());
-            emit dataChanged(index(0), index(m_networks.count()-1));
+            refreshWifiList();
             delete network;
         }
     }
@@ -253,8 +264,12 @@ void WifiModel::onVisibleNetworkAdded(const QString &stationId, const QString &n
     qDebug() << "Visible network added" << stationId << "=" << name << "(connected=" << connected << ")";
     QPointer<WifiNetwork> network = new WifiNetwork(parseNetworkId(stationId), name, type);
     network->setStationId(stationId);
-    network->setConnected(connected);
-    this->addOrReplaceNetwork(network, ConnectedChanged | StationIdChanged);
+
+    QPointer<WifiNetwork> ret_network = this->addOrReplaceNetwork(network, StationIdChanged);
+    if(connected){
+        this->m_connectedNetwork = ret_network;
+        emit isConnectedChanged(connected);
+    }
 }
 
 void WifiModel::onDeviceAdded(const QString &stationId, const QString &name)
@@ -273,9 +288,13 @@ void WifiModel::onKnownNetworkRemoved(const QString &networkId, const QString &n
     if(m_networks.contains(parseNetworkId(networkId))){
         QPointer<WifiNetwork> network = m_networks.value(parseNetworkId(networkId));
         if(network){
-            m_networks.remove(network->id());
-            emit dataChanged(index(0), index(m_networks.count()-1));
-            delete network;
+            if(network->stationId().isEmpty()){
+                m_networks.remove(network->id());
+                delete network;
+            } else {
+                network->setKnown(false);
+            }
+            refreshWifiList();
         }
     }
 }
@@ -293,27 +312,18 @@ void WifiModel::onKnownNetworkAdded(const QString &networkId, const QString &nam
 int WifiModel::rowCount(const QModelIndex & parent) const
 {
     Q_UNUSED(parent);
-    return m_networks.count();
+    return this->m_orderedNetworks.count();
 }
 
 QVariant WifiModel::data(const QModelIndex & index, int role) const
 {
     //QMutexLocker locker(&mutex);
 
-    if (index.row() < 0 || index.row() >= m_networks.count())
+    if (index.row() < 0 || index.row() >= this->m_orderedNetworks.count())
         return QVariant();
 
-    /*QList<QPointer<WifiNetwork>> list = m_networks.values();
-    std::sort(list.begin(), list.end(), [](QPointer<WifiNetwork> n1, QPointer<WifiNetwork> n2){
-        return *n1 > *n2;
-    });
-
-    QPointer<WifiNetwork> network = list[index.row()];
-    if(!network){
-        return QVariant();
-    }*/
-
-    QPointer<WifiNetwork> network = m_networks.values().value(index.row());
+    //QPointer<WifiNetwork> network = m_networks.values().value(index.row());
+    QPointer<WifiNetwork> network = this->m_orderedNetworks.value(index.row());
     if(!network){
         return QVariant();
     }
@@ -332,7 +342,7 @@ QVariant WifiModel::data(const QModelIndex & index, int role) const
         case KnownRole:
             return QVariant(network->known());
         case ConnectedRole:
-            return QVariant(this->connectedNetwork && this->connectedNetwork->id() == network->id());
+            return QVariant(this->m_connectedNetwork && this->m_connectedNetwork->id() == network->id());
         case StrengthRole:
             return QVariant(network->strength());
     }

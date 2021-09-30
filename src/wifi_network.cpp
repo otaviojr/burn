@@ -10,7 +10,6 @@ WifiNetwork::WifiNetwork()
     m_type = "";
     m_known = false;
     m_strength = 0;
-    m_connected = false;
 }
 
 WifiNetwork::WifiNetwork(const QString &id, const QString &name, const QString &type)
@@ -22,7 +21,6 @@ WifiNetwork::WifiNetwork(const QString &id, const QString &name, const QString &
     m_stationId = "";
     m_known = false;
     m_strength = 0;
-    m_connected = false;
 }
 
 QString WifiNetwork::id() const
@@ -60,11 +58,6 @@ float WifiNetwork::strength() const
     return m_strength;
 }
 
-bool WifiNetwork::connected() const
-{
-    return m_connected;
-}
-
 void WifiNetwork::setId(const QString& id)
 {
     m_id = id;
@@ -98,9 +91,4 @@ void WifiNetwork::setKnown(const bool &known)
 void WifiNetwork::setStrength(const float& strength)
 {
     m_strength = strength;
-}
-
-void WifiNetwork::setConnected(const bool &connected)
-{
-    m_connected = connected;
 }

@@ -60,6 +60,8 @@ Dialog {
 
                 TextField {
                     id: wifiPasswordText
+                    focus: true
+                    echoMode: TextInput.Password
                     anchors{
                         left: parent.left
                         right: parent.right

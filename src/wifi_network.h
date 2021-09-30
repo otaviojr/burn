@@ -17,7 +17,6 @@ public:
     QString type() const;
     bool known() const;
     float strength() const;
-    bool connected() const;
 
     void setId(const QString& id);
     void setNetworkId(const QString& networkId);
@@ -26,14 +25,13 @@ public:
     void setType(const QString& type);
     void setKnown(const bool &known);
     void setStrength(const float& strength);
-    void setConnected(const bool& connected);
 
     bool operator<(const WifiNetwork& n) const {
-      return this->connected() || this->strength() < n.strength();
+      return this->strength() < n.strength();
     }
 
     bool operator>(const WifiNetwork& n) const {
-      return n.connected() || this->strength() > n.strength();
+      return this->strength() > n.strength();
     }
 
 private:
@@ -44,7 +42,6 @@ private:
     QString m_name;
     bool m_known;
     float m_strength;
-    bool m_connected;
 };
 
 #endif //__WIFI_NETWORK_H__

@@ -14,6 +14,7 @@ class WifiModel : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(bool isScanning READ isScanning NOTIFY isScanningChanged)
+    Q_PROPERTY(bool isConnected READ isConnected NOTIFY isConnectedChanged)
     Q_ENUMS(WifiModelRoles)
 public:
     enum WifiModelRoles {
@@ -33,8 +34,7 @@ public:
         NameChanged           = 0b00000100,
         TypeChanged           = 0b00001000,
         KnownChanged          = 0b00010000,
-        ConnectedChanged      = 0b00100000,
-        StrengthChanged       = 0b01000000,
+        StrengthChanged       = 0b00100000,
         AllChanged            = 0b10000000
     };
 
@@ -42,6 +42,7 @@ public:
     ~WifiModel();
 
     bool isScanning() const;
+    bool isConnected() const;
 
     QHash<int, QByteArray> roleNames() const {
         QHash<int, QByteArray> roles;
@@ -83,17 +84,20 @@ private slots:
 
 signals:
     void isScanningChanged(const bool value);
+    void isConnectedChanged(const bool value);
 
 private:
+    void refreshWifiList();
     QString parseNetworkId(const QString &networkId);
     QString parseStationId(const QString &stationId);
-    void addOrReplaceNetwork(QPointer<WifiNetwork> network, const unsigned int &changed);
+    QPointer<WifiNetwork> addOrReplaceNetwork(QPointer<WifiNetwork> network, const unsigned int &changed);
 
 private:
     bool m_isScanning;
     Iwd m_iwd;
-    QPointer<WifiNetwork> connectedNetwork;
+    QPointer<WifiNetwork> m_connectedNetwork;
     QMap<QString, QPointer<WifiNetwork>> m_networks;
+    QList<QPointer<WifiNetwork>> m_orderedNetworks;
     QPointer<SignalLevelAgent> m_signal;
     QPointer<WifiAuth> m_auth;
     //QMutex mutex;
