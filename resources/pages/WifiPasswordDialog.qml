@@ -23,8 +23,11 @@ Dialog {
 
     property alias password : wifiPasswordText.text
 
-
     signal connectNetwork
+
+    onPasswordChanged: {
+        wifiPasswordText.focus = true
+    }
 
     onAccepted: {
         wifiPasswordDialog.connectNetwork()
