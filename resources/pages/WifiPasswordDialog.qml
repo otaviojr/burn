@@ -25,8 +25,11 @@ Dialog {
 
     signal connectNetwork
 
-    onPasswordChanged: {
+    function setFocus(){
         wifiPasswordText.focus = true
+    }
+
+    onPasswordChanged: {
     }
 
     onAccepted: {

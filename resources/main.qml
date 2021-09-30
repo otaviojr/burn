@@ -441,8 +441,8 @@ ApplicationWindow {
                 wifiPasswordDialog.known = wifiOptionsDialog.known
                 wifiPasswordDialog.type = wifiOptionsDialog.type
                 wifiPasswordDialog.password = "";
-                wifiPasswordDialog.open()
-                wifiPasswordDialog.focus = true
+                wifiPasswordDialog.open();
+                wifiPasswordDialog.setFocus();
             } else {
                 wifiList.close();
                 wifiModel.connectNetwork(networkId);
