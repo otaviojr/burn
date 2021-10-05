@@ -74,11 +74,11 @@ target_link_libraries(burn PUBLIC
 )
 
 # special case begin
-if(UNIX AND NOT APPLE AND CMAKE_CROSSCOMPILING)
-    find_package(Qt6 COMPONENTS QuickTemplates2)
+#if(UNIX AND NOT APPLE AND CMAKE_CROSSCOMPILING)
+#    find_package(Qt6 COMPONENTS QuickTemplates2)
      # Work around QTBUG-86533
-    target_link_libraries(gallery_controls2 PRIVATE Qt::QuickTemplates2)
-endif()
+#    target_link_libraries(gallery_controls2 PRIVATE Qt::QuickTemplates2)
+#endif()
 # special case end
 
 # Resources:
